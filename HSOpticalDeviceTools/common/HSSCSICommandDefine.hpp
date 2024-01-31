@@ -133,6 +133,8 @@ enum struct EHSSCSI_ReadyStatus {
 };
 
 
+
+
 using HSSCSI_SPTD_ResponseRawDataType = uint8_t;
 using HSSCSI_SPTD_ResponseRawData = std::shared_ptr<HSSCSI_SPTD_ResponseRawDataType[]>;
 

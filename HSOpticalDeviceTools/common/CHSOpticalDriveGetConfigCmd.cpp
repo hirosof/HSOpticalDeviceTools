@@ -7,7 +7,7 @@ bool CHSOpticalDriveGetConfigCmd::executeRawGeneralCommand( THSSCSI_CommandData*
 
 
 size_t CHSOpticalDriveGetConfigCmd::executeRawGetConfigCmd( EHSSCSI_GET_CONFIGURATION_RT_TYPE type,
-    uint16_t startFeatureNumber, HSSCSI_SPTD_ResponseRawData* pRawResponseData, HSSCSI_SPTD_RESULT* pDetailResult ) {
+    uint16_t startFeatureNumber, HSSCSI_SPTD_ResponseRawData* pRawResponseData, HSSCSI_SPTD_RESULT* pDetailResult ) const{
 
     if ( pRawResponseData == nullptr ) return 0;
 
@@ -100,7 +100,7 @@ void CHSOpticalDriveGetConfigCmd::SetDrive( CHSOpticalDrive* pDrive ) {
 
 
 size_t CHSOpticalDriveGetConfigCmd::execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE type, 
-	uint16_t startFeatureNumber, THSSCSI_FeatureInfo* pInfo, HSSCSI_SPTD_RESULT* pDetailResult ) {
+	uint16_t startFeatureNumber, THSSCSI_FeatureInfo* pInfo, HSSCSI_SPTD_RESULT* pDetailResult ) const{
 
 
     if ( pInfo == nullptr ) return 0;
@@ -134,7 +134,7 @@ size_t CHSOpticalDriveGetConfigCmd::execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE t
     return pInfo->Descriptors.size( );
 }
 
-bool CHSOpticalDriveGetConfigCmd::getCurrentProfileNumber( uint16_t* pCurrentProfile ) {
+bool CHSOpticalDriveGetConfigCmd::getCurrentProfileNumber( uint16_t* pCurrentProfile ) const{
     if ( pCurrentProfile == nullptr ) return false;
 
     THSSCSI_CommandData data;
@@ -173,7 +173,7 @@ bool CHSOpticalDriveGetConfigCmd::getCurrentProfileNumber( uint16_t* pCurrentPro
     return false;
 }
 
-bool CHSOpticalDriveGetConfigCmd::getSupportProfileNumbers( HSSCSI_ProfilesNumberVector* pProfiles ) {
+bool CHSOpticalDriveGetConfigCmd::getSupportProfileNumbers( HSSCSI_ProfilesNumberVector* pProfiles ) const {
     if ( pProfiles == nullptr ) return false;
 
     THSSCSI_FeatureInfo info;
@@ -204,7 +204,7 @@ bool CHSOpticalDriveGetConfigCmd::getSupportProfileNumbers( HSSCSI_ProfilesNumbe
     return false;
 }
 
-bool CHSOpticalDriveGetConfigCmd::getSupportProfileNames( HSSCSI_ProfilesNameVector* pProfiles ) {
+bool CHSOpticalDriveGetConfigCmd::getSupportProfileNames( HSSCSI_ProfilesNameVector* pProfiles ) const{
     if ( pProfiles == nullptr ) return false;
     HSSCSI_ProfilesNumberVector  pnv;
 
@@ -222,7 +222,7 @@ bool CHSOpticalDriveGetConfigCmd::getSupportProfileNames( HSSCSI_ProfilesNameVec
     return false;
 }
 
-bool CHSOpticalDriveGetConfigCmd::getSupportProfiles( HSSCSI_Profiles* pProfiles, bool bIncludeUnknown ) {
+bool CHSOpticalDriveGetConfigCmd::getSupportProfiles( HSSCSI_Profiles* pProfiles, bool bIncludeUnknown ) const{
     if ( pProfiles == nullptr ) return false;
     HSSCSI_ProfilesNumberVector  pnv;
     if ( this->getSupportProfileNumbers( &pnv) ) {
@@ -346,5 +346,63 @@ std::string CHSOpticalDriveGetConfigCmd::GetProfileNameString( EHSSCSI_ProfileNa
             return std::string( "BD-RE" );
 
     }
+    return std::string( "Unknown" );
+}
+
+EHSSCSI_ProfileName CHSOpticalDriveGetConfigCmd::getCurrentProfileName( void ) const {
+    uint16_t pn;
+    if ( this->getCurrentProfileNumber( &pn ) ) {
+        return this->GetProfileName( pn );
+    }
+    return EHSSCSI_ProfileName::Unknown;
+}
+
+EHSSCSI_ProfileFamily CHSOpticalDriveGetConfigCmd::getCurrentProfileFamily( void ) const {
+
+    EHSSCSI_ProfileName pn = this->getCurrentProfileName( );
+
+    switch ( pn ) {
+        case EHSSCSI_ProfileName::CD_ROM:
+        case EHSSCSI_ProfileName::CD_R:
+        case EHSSCSI_ProfileName::CD_RW:
+            return EHSSCSI_ProfileFamily::CD;
+
+        case EHSSCSI_ProfileName::DVD_ROM:
+        case EHSSCSI_ProfileName::DVD_R:
+        case EHSSCSI_ProfileName::DVD_R_DL_Sequential:
+        case EHSSCSI_ProfileName::DVD_R_DL_Jump:
+        case EHSSCSI_ProfileName::DVD_RW_Restricted:
+        case EHSSCSI_ProfileName::DVD_RW_Sequential:
+        case EHSSCSI_ProfileName::DVD_RAM:
+        case EHSSCSI_ProfileName::DVD_Plus_R:
+        case EHSSCSI_ProfileName::DVD_Plus_R_DL:
+        case EHSSCSI_ProfileName::DVD_Plus_RW:
+            return EHSSCSI_ProfileFamily::DVD;
+
+        case EHSSCSI_ProfileName::BD_ROM:
+        case EHSSCSI_ProfileName::BD_R_SRM:
+        case EHSSCSI_ProfileName::BD_R_RRM:
+        case EHSSCSI_ProfileName::BD_RE:
+            return EHSSCSI_ProfileFamily::BD;
+    }
+    return EHSSCSI_ProfileFamily::Unknown;
+}
+
+std::string CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyString( void ) const {
+    return this->GetProfileFamilyString(this->getCurrentProfileFamily());
+}
+
+std::string CHSOpticalDriveGetConfigCmd::GetProfileFamilyString( EHSSCSI_ProfileFamily profileFamily ) {
+
+    switch ( profileFamily ) {
+
+        case EHSSCSI_ProfileFamily::CD:
+            return std::string( "CD" );
+        case EHSSCSI_ProfileFamily::DVD:
+            return std::string( "DVD" );
+        case EHSSCSI_ProfileFamily::BD:
+            return std::string( "BD" );
+    }
+
     return std::string( "Unknown" );
 }

@@ -69,6 +69,14 @@ enum struct  EHSSCSI_ProfileName {
 	BD_RE,	//BD-RE
 };
 
+enum struct EHSSCSI_ProfileFamily {
+	Unknown = 0,
+	CD,
+	DVD,
+	BD
+};
+
+
 using HSSCSI_ProfilesItem = std::pair<uint16_t,EHSSCSI_ProfileName>;
 using HSSCSI_Profiles = std::vector<HSSCSI_ProfilesItem>;
 
@@ -83,7 +91,7 @@ private:
 
 	bool executeRawGeneralCommand( THSSCSI_CommandData* pData ) const;
 	size_t  executeRawGetConfigCmd( EHSSCSI_GET_CONFIGURATION_RT_TYPE type, uint16_t startFeatureNumber,
-		HSSCSI_SPTD_ResponseRawData* pRawResponseData, HSSCSI_SPTD_RESULT* pDetailResult = nullptr );
+		HSSCSI_SPTD_ResponseRawData* pRawResponseData, HSSCSI_SPTD_RESULT* pDetailResult = nullptr ) const;
 
 
 public:
@@ -92,19 +100,26 @@ public:
 	void SetDrive( CHSOpticalDrive* pDrive );
 
 	size_t  execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE type, uint16_t startFeatureNumber,
-		THSSCSI_FeatureInfo* pInfo, HSSCSI_SPTD_RESULT* pDetailResult = nullptr );
+		THSSCSI_FeatureInfo* pInfo, HSSCSI_SPTD_RESULT* pDetailResult = nullptr ) const;
 
-	bool getCurrentProfileNumber( uint16_t* pCurrentProfile );
+	bool getCurrentProfileNumber( uint16_t* pCurrentProfile ) const;
 
 
-	bool getSupportProfileNumbers( HSSCSI_ProfilesNumberVector* pProfiles );
-	bool getSupportProfileNames( HSSCSI_ProfilesNameVector* pProfiles );
+	bool getSupportProfileNumbers( HSSCSI_ProfilesNumberVector* pProfiles ) const;
+	bool getSupportProfileNames( HSSCSI_ProfilesNameVector* pProfiles ) const;
 
-	bool getSupportProfiles( HSSCSI_Profiles* pProfiles , bool bIncludeUnknown=false);
+	bool getSupportProfiles( HSSCSI_Profiles* pProfiles , bool bIncludeUnknown=false) const;
 
 	static EHSSCSI_ProfileName GetProfileName( uint16_t profileNumber );
 	static std::string GetProfileNameString( uint16_t profileNumber );
 	static std::string GetProfileNameString( EHSSCSI_ProfileName profileName );
+
+	EHSSCSI_ProfileName getCurrentProfileName( void ) const;
+	EHSSCSI_ProfileFamily getCurrentProfileFamily(void) const;
+
+	std::string getCurrentProfileFamilyString( void ) const;
+
+	static std::string GetProfileFamilyString( EHSSCSI_ProfileFamily profileFamily );
 
 
 };

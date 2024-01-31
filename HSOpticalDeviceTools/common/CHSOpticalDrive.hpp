@@ -42,6 +42,17 @@ enum struct EHSOD_TrayState {
 	FailedGotStatus
 };
 
+
+
+enum struct EHSOD_AlimentMaskType {
+	ByteAliment = 0,
+	WordAliment,
+	DwordAliment,
+	DoubleDwordAliment,
+	UnknownAliment,
+	FailedGodAliment
+};
+
 class CHSOpticalDrive {
 
 protected:
@@ -92,6 +103,8 @@ public:
 	bool spinUp( HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
 	bool spinDown( HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
 
+
+	EHSOD_AlimentMaskType getAlimentMask(ULONG *pRawAlimentMask )const;
 
 
 };

@@ -396,3 +396,38 @@ bool CHSOpticalDrive::spinDown( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
 
     return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
+
+EHSOD_AlimentMaskType CHSOpticalDrive::getAlimentMask( ULONG* pRawAlimentMask ) const {
+
+    if ( this->isOpened( ) == false ) return EHSOD_AlimentMaskType::FailedGodAliment;
+
+    STORAGE_ADAPTER_DESCRIPTOR sad;
+    STORAGE_PROPERTY_QUERY query;
+
+    memset( &query, 0, sizeof( STORAGE_PROPERTY_QUERY ) );
+
+    query.PropertyId = StorageAdapterProperty;
+    query.QueryType = PropertyStandardQuery;
+
+    DWORD returnSize;
+    BOOL bRet = DeviceIoControl( this->getHandle( ), IOCTL_STORAGE_QUERY_PROPERTY,
+        &query, static_cast<DWORD>( sizeof( STORAGE_PROPERTY_QUERY ) ),
+        &sad, static_cast<DWORD>( sizeof( STORAGE_ADAPTER_DESCRIPTOR ) ),
+        &returnSize, nullptr );
+    if ( bRet ) {
+        if ( pRawAlimentMask ) *pRawAlimentMask = sad.AlignmentMask;
+        switch ( sad.AlignmentMask) {
+            case 0:
+                return EHSOD_AlimentMaskType::ByteAliment;
+            case 1:
+                return EHSOD_AlimentMaskType::WordAliment;
+            case 3:
+                return EHSOD_AlimentMaskType::DwordAliment;
+            case 7:
+                return EHSOD_AlimentMaskType::DoubleDwordAliment;
+        }
+        return EHSOD_AlimentMaskType::UnknownAliment;
+    }
+    return EHSOD_AlimentMaskType::FailedGodAliment;
+}
+

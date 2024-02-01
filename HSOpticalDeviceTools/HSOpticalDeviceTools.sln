@@ -5,6 +5,10 @@ VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Experiment", "Experiment\Experiment.vcxproj", "{E24FF7B3-5EC4-423C-B316-CDB2942C2A01}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpticalDriveSelectComboBox", "OpticalDriveSelectComboBox\OpticalDriveSelectComboBox.vcxproj", "{C161E095-EE29-4954-8F4F-35188258FF24}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WM_DEVICECHANGE", "WM_DEVICECHANGE\WM_DEVICECHANGE.vcxproj", "{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +25,22 @@ Global
 		{E24FF7B3-5EC4-423C-B316-CDB2942C2A01}.Release|x64.Build.0 = Release|x64
 		{E24FF7B3-5EC4-423C-B316-CDB2942C2A01}.Release|x86.ActiveCfg = Release|Win32
 		{E24FF7B3-5EC4-423C-B316-CDB2942C2A01}.Release|x86.Build.0 = Release|Win32
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Debug|x64.ActiveCfg = Debug|x64
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Debug|x64.Build.0 = Debug|x64
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Debug|x86.ActiveCfg = Debug|Win32
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Debug|x86.Build.0 = Debug|Win32
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Release|x64.ActiveCfg = Release|x64
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Release|x64.Build.0 = Release|x64
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Release|x86.ActiveCfg = Release|Win32
+		{C161E095-EE29-4954-8F4F-35188258FF24}.Release|x86.Build.0 = Release|Win32
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Debug|x64.ActiveCfg = Debug|x64
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Debug|x64.Build.0 = Debug|x64
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Debug|x86.ActiveCfg = Debug|Win32
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Debug|x86.Build.0 = Debug|Win32
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Release|x64.ActiveCfg = Release|x64
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Release|x64.Build.0 = Release|x64
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Release|x86.ActiveCfg = Release|Win32
+		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

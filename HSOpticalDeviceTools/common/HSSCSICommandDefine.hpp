@@ -109,6 +109,8 @@ struct HSSCSI_SPTD_RESULT {
 
 const ULONG HSSCSI_SPTD_DEFAULT_TIMEOUT = 10;
 
+#pragma warning( push )
+#pragma warning( disable:26495 )
 struct THSSCSI_CommandData {
 	std::shared_ptr<uint8_t> raw;
 	size_t allocatedRawSize;
@@ -122,7 +124,7 @@ struct THSSCSI_CommandData {
 
 	HSSCSI_SPTD_RESULT result;
 };
-
+#pragma warning(pop )
 
 
 enum struct EHSSCSI_ReadyStatus {

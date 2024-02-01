@@ -30,14 +30,15 @@ struct THSSCSI_FeatureDescriptorInfo {
 	uint8_t* pAdditionalData;
 };
 
-
+#pragma warning( push )
+#pragma warning( disable:26495 )
 struct  THSSCSI_FeatureInfo {
 	HSSCSI_SPTD_ResponseRawData raw;
 	size_t rawSize;
 	THSSCSI_FeatureHeader* pHeader;
 	std::vector<THSSCSI_FeatureDescriptorInfo> Descriptors;
 };
-
+#pragma warning(pop)
 
 struct THSSCSI_ProfileDescriptor {
 	uint8_t  ProfileNumber[2];

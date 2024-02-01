@@ -59,8 +59,8 @@ size_t CHSOpticalDriveGetConfigCmd::executeRawGetConfigCmd( EHSSCSI_GET_CONFIGUR
     data.pSPTDStruct->DataBuffer = resp.get( );
     data.pSPTDStruct->DataTransferLength = static_cast<ULONG>( size );
 
-    data.pSPTDStruct->Cdb[7] = ( size % 0xFF00 ) >> 8;
-    data.pSPTDStruct->Cdb[8] = size % 0xFF;
+    data.pSPTDStruct->Cdb[7] = ( size & 0xFF00 ) >> 8;
+    data.pSPTDStruct->Cdb[8] = size & 0xFF;
 
     if ( this->executeRawGeneralCommand( &data ) == false ) {
         return 0;

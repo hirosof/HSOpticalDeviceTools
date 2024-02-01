@@ -274,7 +274,7 @@ bool CHSOpticalDrive::trayOpen( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
         pDetailResult->resultSize = 0;
     }
 
-    if ( params.result.DeviceIOControlResult == FALSE ) return FALSE;
+    if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
     return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
@@ -300,7 +300,7 @@ bool CHSOpticalDrive::trayClose( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWo
         pDetailResult->resultSize = 0;
     }
 
-    if ( params.result.DeviceIOControlResult == FALSE ) return FALSE;
+    if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
     return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
@@ -366,7 +366,7 @@ bool CHSOpticalDrive::spinUp( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork 
         pDetailResult->resultSize = 0;
     }
 
-    if ( params.result.DeviceIOControlResult == FALSE ) return FALSE;
+    if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
     return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
@@ -392,7 +392,7 @@ bool CHSOpticalDrive::spinDown( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
         pDetailResult->resultSize = 0;
     }
 
-    if ( params.result.DeviceIOControlResult == FALSE ) return FALSE;
+    if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
     return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
@@ -405,6 +405,7 @@ EHSOD_AlimentMaskType CHSOpticalDrive::getAlimentMask( ULONG* pRawAlimentMask ) 
     STORAGE_PROPERTY_QUERY query;
 
     memset( &query, 0, sizeof( STORAGE_PROPERTY_QUERY ) );
+    memset( &sad, 0, sizeof( STORAGE_ADAPTER_DESCRIPTOR ) );
 
     query.PropertyId = StorageAdapterProperty;
     query.QueryType = PropertyStandardQuery;

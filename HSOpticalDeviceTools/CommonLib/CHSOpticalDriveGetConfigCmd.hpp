@@ -2,6 +2,8 @@
 
 #include "CHSOpticalDrive.hpp"
 
+#pragma pack(push , 1)
+
 
 enum struct EHSSCSI_GET_CONFIGURATION_RT_TYPE {
 	All = 0,
@@ -70,11 +72,40 @@ enum struct  EHSSCSI_ProfileName {
 	BD_RE,	//BD-RE
 };
 
-enum struct EHSSCSI_ProfileFamily {
+enum struct EHSSCSI_ProfileRoughType {
 	Unknown = 0,
 	CD,
 	DVD,
 	BD
+};
+
+
+//CD Read Feature Descriptor (Feature Code = 0x001E)
+struct THSSCSI_FeatureDescriptor_CDRead {
+	THSSCSI_FeatureDescriptorHeader header;
+	bool CDText : 1;
+	bool C2Flags : 1;
+	uint8_t Reserved : 3;
+	bool DAP : 1;
+};
+
+
+//Removable Medium Feature Descriptor (Feature Code = 0x0003)
+struct THSSCSI_FeatureDescriptor_RemovableMedium {
+	THSSCSI_FeatureDescriptorHeader header;
+	bool Lock : 1;
+	bool DBML : 1;
+	bool Pvnt_Jmpr : 1;
+	bool Eject : 1;
+	bool Load : 1;
+	uint8_t Loading_Mechanism_Type : 3;
+	uint8_t Reserved[3];
+};
+
+// Drive Serial Number Feature Descriptor (Feature Code = 0x0108)
+struct THSSCSI_FeatureDescriptor_DriveSerialNumber {
+	THSSCSI_FeatureDescriptorHeader header;
+	unsigned char SerialNumber[256];
 };
 
 
@@ -83,6 +114,10 @@ using HSSCSI_Profiles = std::vector<HSSCSI_ProfilesItem>;
 
 using HSSCSI_ProfilesNumberVector = std::vector<uint16_t>;
 using HSSCSI_ProfilesNameVector = std::vector<EHSSCSI_ProfileName>;
+
+
+
+#pragma pack(pop)
 
 
 class CHSOpticalDriveGetConfigCmd {
@@ -112,15 +147,30 @@ public:
 	bool getSupportProfiles( HSSCSI_Profiles* pProfiles , bool bIncludeUnknown=false) const;
 
 	static EHSSCSI_ProfileName GetProfileName( uint16_t profileNumber );
-	static std::string GetProfileNameString( uint16_t profileNumber );
-	static std::string GetProfileNameString( EHSSCSI_ProfileName profileName );
+	static std::string GetProfileNameString( uint16_t profileNumber , bool groupOfSameType = true);
+	static std::string GetProfileNameString( EHSSCSI_ProfileName profileName , bool groupOfSameType = true );
 
 	EHSSCSI_ProfileName getCurrentProfileName( void ) const;
-	EHSSCSI_ProfileFamily getCurrentProfileFamily(void) const;
+	EHSSCSI_ProfileRoughType getCurrentProfileRoughType(void) const;
 
-	std::string getCurrentProfileFamilyString( void ) const;
+	std::string getCurrentProfileRoughTypeString( void ) const;
 
-	static std::string GetProfileFamilyString( EHSSCSI_ProfileFamily profileFamily );
+	static std::string GetProfileRoughTypeString( EHSSCSI_ProfileRoughType profileFamily );
 
+
+	template <typename T> bool getGeneralFeatureDescriptor( T* pDesc , uint16_t targetFeatureNumber )const {
+		if ( pDesc == nullptr ) return false;
+		THSSCSI_FeatureInfo info;
+		if ( this->execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE::Once, targetFeatureNumber, &info ) == 0 )return false;
+		THSSCSI_FeatureDescriptorInfo descInfo = info.Descriptors[0];
+		memcpy( pDesc, descInfo.pHeader, sizeof( T ) );
+		return true;
+	}
+
+	bool getCDReadFeatureDescriptor( THSSCSI_FeatureDescriptor_CDRead* pDesc )const;
+	bool getRemovableMediumFeatureDescriptor( THSSCSI_FeatureDescriptor_RemovableMedium* pDesc ) const;
+	bool getDriveSerialNumberFeatureDescriptor( THSSCSI_FeatureDescriptor_DriveSerialNumber* pDesc ) const;
 
 };
+
+

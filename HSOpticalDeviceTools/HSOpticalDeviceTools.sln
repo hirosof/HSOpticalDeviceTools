@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpticalDriveSelectComboBox"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WM_DEVICECHANGE", "WM_DEVICECHANGE\WM_DEVICECHANGE.vcxproj", "{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonLib", "CommonLib\CommonLib.vcxproj", "{A6A69963-242F-4BA8-9378-3A4EB42FAD80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Release|x64.Build.0 = Release|x64
 		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Release|x86.ActiveCfg = Release|Win32
 		{0ADD0C2F-FE9C-405B-A7A0-A0FD4892C736}.Release|x86.Build.0 = Release|Win32
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Debug|x64.ActiveCfg = Debug|x64
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Debug|x64.Build.0 = Debug|x64
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Debug|x86.ActiveCfg = Debug|Win32
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Debug|x86.Build.0 = Debug|Win32
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Release|x64.ActiveCfg = Release|x64
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Release|x64.Build.0 = Release|x64
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Release|x86.ActiveCfg = Release|Win32
+		{A6A69963-242F-4BA8-9378-3A4EB42FAD80}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

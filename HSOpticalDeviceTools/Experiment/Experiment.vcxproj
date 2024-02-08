@@ -131,18 +131,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\CHSOpticalDrive.cpp" />
-    <ClCompile Include="..\common\CHSOpticalDriveGetConfigCmd.cpp" />
-    <ClCompile Include="..\common\HSSCSICommandSupport.cpp" />
     <ClCompile Include="CHSOpticalDriveExperiment.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\CHSOpticalDrive.hpp" />
-    <ClInclude Include="..\common\CHSOpticalDriveGetConfigCmd.hpp" />
-    <ClInclude Include="..\common\HSSCSICommandDefine.hpp" />
-    <ClInclude Include="..\common\HSSCSICommandSupport.hpp" />
     <ClInclude Include="CHSOpticalDriveExperiment.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
+      <Project>{a6a69963-242f-4ba8-9378-3a4eb42fad80}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

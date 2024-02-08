@@ -10,13 +10,15 @@
 
 #include<algorithm>
 
-#include "../common/HSSCSICommandSupport.hpp"
+#include "HSSCSICommandSupport.hpp"
 
 const size_t DHSOpticalDriveVendorIDLength = 8U;
 const size_t DHSOpticalDriveProductIDLength = 16U;
 const size_t DHSOpticalDriveProductRevisionLevelLength = 4U;
 const size_t DHSOpticalDriveDeviceNameLength = 30U;
 
+
+#pragma pack(push , 1)
 
 struct THSOpticalDriveDeviceInfo {
 	char VendorID[DHSOpticalDriveVendorIDLength + 1];
@@ -26,13 +28,16 @@ struct THSOpticalDriveDeviceInfo {
 };
 
 
+struct THSOpticalDriveInfo {
+	char Letter;
+	bool bIncludedInfo;
+	THSOpticalDriveDeviceInfo Info;
+};
+
+
 struct THSEnumrateOpticalDriveInfo {
 	uint8_t  uOpticalDriveCount;
-	struct tagDrive {
-		char Letter;
-		bool bIncludedInfo;
-		THSOpticalDriveDeviceInfo Info;
-	}Drives[26];
+	THSOpticalDriveInfo Drives[26];
 };
 
 
@@ -53,6 +58,10 @@ enum struct EHSOD_AlimentMaskType {
 	FailedGodAliment
 };
 
+
+#pragma pack(pop)
+
+
 class CHSOpticalDrive {
 
 protected:
@@ -64,6 +73,7 @@ public:
 	static HANDLE OpenDrive( char driveLetter );
 	static bool IsOpticalDrive( const char driveLetter );
 	static bool EnumOpticalDrive( THSEnumrateOpticalDriveInfo* pInfo );
+	static bool GetFirstOpticalDriveInfo( THSOpticalDriveInfo *pInfo );
 	static bool GetDeviceInfo( const char opticalDriveLetter, THSOpticalDriveDeviceInfo* pInfo );
 	static bool GetDeviceInfoFromHandle( HANDLE hOpticalDrive, THSOpticalDriveDeviceInfo* pInfo );
 
@@ -105,6 +115,7 @@ public:
 
 
 	EHSOD_AlimentMaskType getAlimentMask(ULONG *pRawAlimentMask )const;
+	bool getMaxTransferLength(DWORD *pMaxTransferLength )const;
 
 
 };

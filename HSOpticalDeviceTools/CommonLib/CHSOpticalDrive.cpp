@@ -52,6 +52,20 @@ bool CHSOpticalDrive::EnumOpticalDrive( THSEnumrateOpticalDriveInfo* pInfo ) {
 
 }
 
+bool CHSOpticalDrive::GetFirstOpticalDriveInfo( THSOpticalDriveInfo* pInfo ) {
+    if ( pInfo == nullptr ) return false;
+
+    for ( char c = 'A'; c <= 'Z'; c++ ) {
+        if ( CHSOpticalDrive::IsOpticalDrive( c ) ) {
+            memset( pInfo, 0, sizeof( THSOpticalDriveInfo ) );
+            pInfo->Letter = c;
+            pInfo->bIncludedInfo = CHSOpticalDrive::GetDeviceInfo( c, &pInfo->Info );
+            return true;
+        }
+    }
+    return false;
+}
+
 bool CHSOpticalDrive::GetDeviceInfo( const char opticalDriveLetter, THSOpticalDriveDeviceInfo* pInfo ) {
 
     if ( pInfo == nullptr ) return false;
@@ -211,7 +225,7 @@ EHSSCSI_ReadyStatus CHSOpticalDrive::checkReady( HSSCSI_SPTD_RESULT* pDetailResu
 
     THSSCSI_CommandData params;
     
-    HSSCSI_Alloc_CommandData( &params );
+    HSSCSI_InitializeCommandData( &params );
 
     params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
 
@@ -255,7 +269,7 @@ bool CHSOpticalDrive::trayOpen( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
 
     THSSCSI_CommandData params;
 
-    HSSCSI_Alloc_CommandData( &params );
+    HSSCSI_InitializeCommandData( &params );
 
     params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
     params.pSPTDStruct->TimeOutValue = 60;
@@ -282,7 +296,7 @@ bool CHSOpticalDrive::trayOpen( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
 bool CHSOpticalDrive::trayClose( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork ) const {
     THSSCSI_CommandData params;
 
-    HSSCSI_Alloc_CommandData( &params );
+    HSSCSI_InitializeCommandData( &params );
 
     params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
     params.pSPTDStruct->TimeOutValue = 60;
@@ -314,7 +328,7 @@ bool CHSOpticalDrive::isTrayOpened( void ) const {
 EHSOD_TrayState CHSOpticalDrive::checkTrayState( HSSCSI_SPTD_RESULT* pDetailResult ) const {
     THSSCSI_CommandData params;
 
-    HSSCSI_Alloc_CommandData( &params );
+    HSSCSI_InitializeCommandData( &params );
 
     uint8_t  msHeader[8] = { 0 }; //MECHANISM STATUS Header
 
@@ -348,7 +362,7 @@ bool CHSOpticalDrive::spinUp( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork 
     THSSCSI_CommandData params;
 
 
-    HSSCSI_Alloc_CommandData( &params );
+    HSSCSI_InitializeCommandData( &params );
 
     params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
     
@@ -374,7 +388,7 @@ bool CHSOpticalDrive::spinUp( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork 
 bool CHSOpticalDrive::spinDown( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork ) const {
     THSSCSI_CommandData params;
 
-    HSSCSI_Alloc_CommandData( &params );
+    HSSCSI_InitializeCommandData( &params );
 
     params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
 
@@ -430,5 +444,31 @@ EHSOD_AlimentMaskType CHSOpticalDrive::getAlimentMask( ULONG* pRawAlimentMask ) 
         return EHSOD_AlimentMaskType::UnknownAliment;
     }
     return EHSOD_AlimentMaskType::FailedGodAliment;
+}
+
+bool CHSOpticalDrive::getMaxTransferLength( DWORD* pMaxTransferLength ) const {
+    if ( this->isOpened( ) == false ) return false;
+    if ( pMaxTransferLength == nullptr ) return false;
+
+    STORAGE_ADAPTER_DESCRIPTOR sad;
+    STORAGE_PROPERTY_QUERY query;
+
+    memset( &query, 0, sizeof( STORAGE_PROPERTY_QUERY ) );
+    memset( &sad, 0, sizeof( STORAGE_ADAPTER_DESCRIPTOR ) );
+
+    query.PropertyId = StorageAdapterProperty;
+    query.QueryType = PropertyStandardQuery;
+
+    DWORD returnSize;
+    BOOL bRet = DeviceIoControl( this->getHandle( ), IOCTL_STORAGE_QUERY_PROPERTY,
+        &query, static_cast<DWORD>( sizeof( STORAGE_PROPERTY_QUERY ) ),
+        &sad, static_cast<DWORD>( sizeof( STORAGE_ADAPTER_DESCRIPTOR ) ),
+        &returnSize, nullptr );
+    if ( bRet ) {
+        *pMaxTransferLength = sad.MaximumTransferLength;
+        return true;
+    }
+
+    return false;
 }
 

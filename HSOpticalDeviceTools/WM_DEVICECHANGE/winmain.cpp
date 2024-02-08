@@ -7,6 +7,7 @@
 /*-----------------------インクルード部------------------------*/
 #include <windows.h>
 #include <cstdio>
+#include <Dbt.h>
 /*------------------------------------------------------------*/
 /*-----------------マニフェスト登録----------------------------*/
 #pragma comment(linker,"\"/manifestdependency:type='win32' "	\
@@ -68,6 +69,11 @@ LRESULT CALLBACK MainWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );
 
 //メインウィンドウのウィンドウクラス名
 #define MAINWINDOW_CLASSNAME		PRONAME_TXT			
+
+
+#ifndef _DEBUG
+#define _DEBUG
+#endif
 
 
 #ifdef _DEBUG
@@ -236,6 +242,37 @@ LRESULT CALLBACK MainWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp ) {
 	switch ( msg ) {
 		case WM_DESTROY:
 			PostQuitMessage( 0 );
+			break;
+		case WM_DEVICECHANGE:
+			printf( "WM_DEVICE_CHANGE:\n" );
+			printf( "\tWPARAM：0x%08I64X\n", wp );
+			printf( "\tLPARAM：0x%08I64X\n", lp );
+			printf( "\n" );
+			if ( wp == DBT_DEVNODES_CHANGED ) {
+
+			} else if( ( wp == DBT_DEVICEARRIVAL )|| ( wp == DBT_DEVICEREMOVECOMPLETE )) {
+				DEV_BROADCAST_HDR* pdbh = reinterpret_cast<DEV_BROADCAST_HDR*>( lp );
+
+				printf( "\tDEV_BROADCAST_HDR(%08X)\n" , pdbh->dbch_devicetype );
+
+				if ( pdbh->dbch_devicetype == DBT_DEVTYP_VOLUME ) {
+					DEV_BROADCAST_VOLUME* pv = reinterpret_cast<DEV_BROADCAST_VOLUME*>( lp );
+
+					printf( "\t\tdbcv_unitmask : 0x%08X\n", pv->dbcv_unitmask );
+
+					for ( size_t i = 0; i < 26; i++ ) {
+
+						if ( pv->dbcv_unitmask & ( 1 << i ) ) {
+							printf( "\t\t\t%c:\\\n", static_cast<char>( 'A' + i ) );
+
+						}
+
+					}
+
+				}
+
+			} 
+
 			break;
 		default:
 			return DefWindowProc( hwnd, msg, wp, lp );

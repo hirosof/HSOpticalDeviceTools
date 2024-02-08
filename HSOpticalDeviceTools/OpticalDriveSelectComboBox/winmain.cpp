@@ -7,6 +7,8 @@
 /*-----------------------インクルード部------------------------*/
 #include <windows.h>
 #include <cstdio>
+#include <CommCtrl.h>
+#include "../CommonLib/CHSOpticalDrive.hpp"
 /*------------------------------------------------------------*/
 /*-----------------マニフェスト登録----------------------------*/
 #pragma comment(linker,"\"/manifestdependency:type='win32' "	\
@@ -231,9 +233,32 @@ LRESULT CALLBACK MainWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp ) {
 
 	//クライアントサイズ取得
 	GetClientRect( hwnd, &rcClientSize );
+	THSOpticalDriveInfo info;
+	THSEnumrateOpticalDriveInfo drives;
 
 	//メッセージごとの処理
 	switch ( msg ) {
+		case WM_CREATE:
+			if ( CHSOpticalDrive::EnumOpticalDrive( &drives ) ) {
+
+				HWND hList = CreateWindowEx( NULL, WC_COMBOBOX, NULL, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST,
+					5, 5, 350, 30, hwnd, NULL, NULL, NULL );
+					char desp[64];
+
+
+				for ( uint32_t i = 0; i < drives.uOpticalDriveCount; i++ ) {
+
+
+					if( drives.Drives[i].bIncludedInfo) wsprintfA( desp, "[%c:\\] %s", drives.Drives[i].Letter, drives.Drives[i].Info.DeviceName );
+					else wsprintfA( desp, "[%c:\\]",drives.Drives[i].Letter );
+
+					SendMessageA( hList, CB_ADDSTRING, NULL, (LPARAM) desp );
+
+				}
+					SendMessageA( hList, CB_SETCURSEL, 0,0 );
+
+			}
+			break;
 		case WM_DESTROY:
 			PostQuitMessage( 0 );
 			break;

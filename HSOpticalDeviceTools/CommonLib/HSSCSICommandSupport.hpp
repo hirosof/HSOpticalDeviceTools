@@ -3,4 +3,4 @@
 #include "HSSCSICommandDefine.hpp"
 
 EHSSCSIStatusCode  HSSCSIStatusToStatusCode(const UHSSCSIStatus status );
-bool  HSSCSI_Alloc_CommandData( THSSCSI_CommandData *pData );
+bool  HSSCSI_InitializeCommandData( THSSCSI_CommandData *pData );

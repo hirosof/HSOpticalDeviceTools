@@ -2,10 +2,11 @@
 #include <string>
 
 #include "CHSOpticalDriveExperiment.hpp"
-#include "../common/CHSOpticalDriveGetConfigCmd.hpp"
+#include "../CommonLib/CHSOpticalDriveGetConfigCmd.hpp"
 
 
 void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res , bool firstNewLine = true , std::string prefix="" );
+void ConsoleOut_FeatureDescriptorHeader( THSSCSI_FeatureDescriptorHeader* pHeader, bool firstNewLine = true, std::string prefix = "" );
 
 int main( void ) {
 
@@ -80,40 +81,17 @@ int main( void ) {
 
 			}
 
-			THSSCSI_FeatureInfo info;
 			CHSOpticalDriveGetConfigCmd cmd( &driveExp );
-			
-			size_t size;
-			THSSCSI_FeatureInfo fi;
-			size = cmd.execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE::All, 0, &fi );
-			if ( size > 0 ) {
-				printf( "\n[Support Feature Number List]\n" );
-
-				printf( "\t" );
-
-				
-				for ( size_t i = 0; i < fi.Descriptors.size( ); i++ ) {
-
-					printf( "0x%02X%02X",
-						fi.Descriptors[i].pHeader->FeatureCode[0],
-						fi.Descriptors[i].pHeader->FeatureCode[1] );
-
-					if ( ( i + 1 ) != ( fi.Descriptors.size( ) ) )printf( ", " );
-					if ( ( i + 1 ) % 10 == 0 ) printf( "\n\t" );
-
-				}
-
-				printf( "\n\n" );
-			}
-			
 
 			HSSCSI_Profiles profiles;
 
 			if ( cmd.getSupportProfiles( &profiles ,true) ) {
 
-				printf( "[Support Profiles (Support Media Types)]\n" );
+				printf( "[対応メディアの種類]\n" );
 				for ( auto pn: profiles ) {
-					printf( "\t0x%04X : %s\n", pn.first , cmd.GetProfileNameString( pn.second ).c_str( )  );
+					if ( pn.second != EHSSCSI_ProfileName::RemovableDisk ) {
+						printf( "\t0x%04X : %s\n", pn.first, cmd.GetProfileNameString( pn.second, false ).c_str( ) );
+					}
 				}
 				printf( "\n" );
 			}
@@ -121,12 +99,10 @@ int main( void ) {
 			if ( driveExp.isReady( ) ) {
 				uint16_t cp;
 				if ( cmd.getCurrentProfileNumber( &cp ) ) {
-					printf( "[CurrentProfile (Current Media Type)] \n\t0x%04X : %s\n\n", cp, cmd.GetProfileNameString( cp ).c_str( ) );
+					printf( "[挿入されているメディアの種類] \n\t0x%04X : %s\n\n", cp, cmd.GetProfileNameString( cp ).c_str( ) );
 				}
 
-
-				printf( "[CurrentProfileFamily (Current Media Family)] \n\t%s\n", cmd.getCurrentProfileFamilyString( ).c_str( ) );
-
+				printf( "[挿入されているメディアの大まかな種類] \n\t%s\n", cmd.getCurrentProfileRoughTypeString( ).c_str( ) );
 
 				printf( "\n" );
 			}
@@ -137,21 +113,90 @@ int main( void ) {
 				printf( "[AlimentMask]\n\t%d", (int) amt );
 				switch ( amt ) {
 					case EHSOD_AlimentMaskType::ByteAliment:
-						printf( ":ByteAliment" );
+						printf( " : ByteAliment" );
 						break;
 					case EHSOD_AlimentMaskType::WordAliment:
-						printf( ":WordAliment" );
+						printf( " : WordAliment" );
 						break;
 					case EHSOD_AlimentMaskType::DwordAliment:
-						printf( ":DwordAliment" );
+						printf( " : DwordAliment" );
 						break;
 					case EHSOD_AlimentMaskType::DoubleDwordAliment:
-						printf( ":DoubleDwordAliment" );
+						printf( " : DoubleDwordAliment" );
 						break;
 				}
-				printf( " (Raw : 0x%08X)\n", am );
+				printf( " (Raw : 0x%08X)\n\n", am );
 			}
-				 
+
+			DWORD max_trans_size;
+			if ( driveExp.getMaxTransferLength( &max_trans_size ) ) {
+				printf( "[MaxTransferLength]\n\t%u bytes\n", max_trans_size );
+			}
+		
+
+			size_t size;
+			THSSCSI_FeatureInfo fi;
+			size = cmd.execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE::All, 0, &fi );
+			if ( size > 0 ) {
+				printf( "\n[Support Feature Code List]\n" );
+
+				printf( "\t" );
+
+				for ( size_t i = 0; i < fi.Descriptors.size( ); i++ ) {
+
+					printf( "0x%02X%02X",
+						fi.Descriptors[i].pHeader->FeatureCode[0],
+						fi.Descriptors[i].pHeader->FeatureCode[1] );
+
+					if ( ( i + 1 ) != ( fi.Descriptors.size( ) ) )printf( ", " );
+					if ( ( i + 1 ) % 10 == 0 ) printf( "\n\t" );
+				}
+
+				printf( "\n\n" );
+			}
+
+
+			THSSCSI_FeatureDescriptor_CDRead cdread_feature;
+			if ( cmd.getCDReadFeatureDescriptor( &cdread_feature ) ) {
+
+				printf( "[CD Read Feature Descriptor]\n" );
+				
+				ConsoleOut_FeatureDescriptorHeader( &cdread_feature.header, false, "\t" );
+				printf( "\n\tCD-Text : %d\n", cdread_feature.CDText );
+				printf( "\tC2 Flags : %d\n", cdread_feature.C2Flags );
+				printf( "\tDAP : %d\n", cdread_feature.DAP );
+
+				printf( "\n" );
+
+			}
+
+
+			THSSCSI_FeatureDescriptor_RemovableMedium rem_media_feature;
+			if ( cmd.getRemovableMediumFeatureDescriptor( &rem_media_feature ) ) {
+
+				printf( "\n[Removable Medium Feature Descriptor]\n" );
+				ConsoleOut_FeatureDescriptorHeader( &rem_media_feature.header, false, "\t" );
+				printf( "\n\tLock : %d\n", rem_media_feature.Lock );
+				printf( "\tDBML : %d\n", rem_media_feature.DBML );
+				printf( "\tPvnt Jmpr : %d\n", rem_media_feature.Pvnt_Jmpr );
+				printf( "\tEject : %d\n", rem_media_feature.Eject );
+				printf( "\tLoad : %d\n", rem_media_feature.Load );
+				printf( "\tLoading Mechanism Type : %d\n", rem_media_feature.Loading_Mechanism_Type );
+				printf( "\n" );
+
+			}
+
+			THSSCSI_FeatureDescriptor_DriveSerialNumber driveSerialNumber_desc;
+			if ( cmd.getDriveSerialNumberFeatureDescriptor( &driveSerialNumber_desc) ) {
+				printf( "\n[Drive Serial Number Feature Descriptor]\n" );
+				ConsoleOut_FeatureDescriptorHeader( &driveSerialNumber_desc.header, false, "\t" );
+				printf( "\n\tSerial Number : %s\n", driveSerialNumber_desc.SerialNumber );
+			}
+
+
+
+
+
 			driveExp.close( );
 		}
 		printf( "\n\n" );
@@ -173,4 +218,15 @@ void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res, bool firstNewLine, std::str
 	printf( "%sASC：0x%02X\n", prefix.c_str( ), res.scsiASC );
 	printf( "%sASCQ：0x%02X\n", prefix.c_str( ), res.scsiASCQ );
 	printf( "\n" );
+}
+
+void ConsoleOut_FeatureDescriptorHeader( THSSCSI_FeatureDescriptorHeader* pHeader, bool firstNewLine, std::string prefix ) {
+	if ( pHeader == nullptr )return;
+	if ( firstNewLine ) printf( "\n" );
+	printf( "%sHeader:\n", prefix.c_str( ) );
+	printf( "%s\tFeature Code : 0x%02X%02X\n", prefix.c_str( ),pHeader->FeatureCode[0], pHeader->FeatureCode[1] );
+	printf( "%s\tCurrent : %d\n", prefix.c_str( ), pHeader->Current );
+	printf( "%s\tPersistent : %d\n", prefix.c_str( ),pHeader->Persistent );
+	printf( "%s\tVersion : %d\n", prefix.c_str( ),pHeader->Version );
+	printf( "%s\tAdditionalLength : %d\n", prefix.c_str( ),pHeader->AdditionalLength );
 }

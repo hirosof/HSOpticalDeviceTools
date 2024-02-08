@@ -109,7 +109,7 @@ int main( void ) {
 
 			ULONG am;
 			EHSOD_AlimentMaskType amt = driveExp.getAlimentMask( &am );
-			if ( amt!= EHSOD_AlimentMaskType::FailedGodAliment) {
+			if ( amt!= EHSOD_AlimentMaskType::FailedGotAliment) {
 				printf( "[AlimentMask]\n\t%d", (int) amt );
 				switch ( amt ) {
 					case EHSOD_AlimentMaskType::ByteAliment:

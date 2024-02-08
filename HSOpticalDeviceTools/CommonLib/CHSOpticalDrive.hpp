@@ -55,7 +55,7 @@ enum struct EHSOD_AlimentMaskType {
 	DwordAliment,
 	DoubleDwordAliment,
 	UnknownAliment,
-	FailedGodAliment
+	FailedGotAliment
 };
 
 

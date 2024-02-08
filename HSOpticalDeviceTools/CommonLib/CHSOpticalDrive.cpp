@@ -413,7 +413,7 @@ bool CHSOpticalDrive::spinDown( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
 
 EHSOD_AlimentMaskType CHSOpticalDrive::getAlimentMask( ULONG* pRawAlimentMask ) const {
 
-    if ( this->isOpened( ) == false ) return EHSOD_AlimentMaskType::FailedGodAliment;
+    if ( this->isOpened( ) == false ) return EHSOD_AlimentMaskType::FailedGotAliment;
 
     STORAGE_ADAPTER_DESCRIPTOR sad;
     STORAGE_PROPERTY_QUERY query;
@@ -443,7 +443,7 @@ EHSOD_AlimentMaskType CHSOpticalDrive::getAlimentMask( ULONG* pRawAlimentMask ) 
         }
         return EHSOD_AlimentMaskType::UnknownAliment;
     }
-    return EHSOD_AlimentMaskType::FailedGodAliment;
+    return EHSOD_AlimentMaskType::FailedGotAliment;
 }
 
 bool CHSOpticalDrive::getMaxTransferLength( DWORD* pMaxTransferLength ) const {

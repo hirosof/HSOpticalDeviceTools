@@ -44,8 +44,6 @@ int main( void ) {
 			switch ( readyState ) {
 				case EHSSCSI_ReadyStatus::Ready:
 					printf( "\tドライブにアクセスする準備ができています。\n" );
-					driveExp.spinDown( );
-
 					break;
 				case EHSSCSI_ReadyStatus::NotReady:
 					printf( "\tドライブにアクセスする準備ができていません。\n" );

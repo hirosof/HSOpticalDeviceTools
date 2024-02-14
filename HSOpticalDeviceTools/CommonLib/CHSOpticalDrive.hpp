@@ -21,6 +21,7 @@ const size_t DHSOpticalDriveDeviceNameLength = 30U;
 #pragma pack(push , 1)
 
 struct THSOpticalDriveDeviceInfo {
+	INQUIRYDATA raw;
 	char VendorID[DHSOpticalDriveVendorIDLength + 1];
 	char ProductID[DHSOpticalDriveProductIDLength + 1];
 	char ProductRevisionLevel[DHSOpticalDriveProductRevisionLevelLength + 1];

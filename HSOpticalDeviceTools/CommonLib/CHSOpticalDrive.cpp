@@ -95,10 +95,10 @@ bool CHSOpticalDrive::GetDeviceInfoFromHandle( HANDLE hOpticalDrive, THSOpticalD
         if ( bRet ) {
 
             memset( pInfo, 0, sizeof( THSOpticalDriveDeviceInfo ) );
+            pInfo->raw = data;
             memcpy( pInfo->VendorID, data.VendorId , DHSOpticalDriveVendorIDLength );
             memcpy( pInfo->ProductID, data.ProductId, DHSOpticalDriveProductIDLength );
             memcpy( pInfo->ProductRevisionLevel, data.ProductRevisionLevel, DHSOpticalDriveProductRevisionLevelLength);
-
 
             pInfo->DeviceName[0] = '\0';
 

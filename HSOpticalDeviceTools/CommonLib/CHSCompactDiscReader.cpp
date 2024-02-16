@@ -133,7 +133,7 @@ bool CHSCompactDiscReader::readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCS
 	cmd.pSPTDStruct->Cdb[8] = ( responseHeaderSize & 0x00FF );
 
 
-	if ( !this->mp_Drive->executeCommand( &cmd ) )return false;
+	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
 	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
 
@@ -153,7 +153,7 @@ bool CHSCompactDiscReader::readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCS
 	cmd.pSPTDStruct->Cdb[8] = ( responseAllSize & 0x00FF );
 
 
-	if ( !this->mp_Drive->executeCommand( &cmd ) )return false;
+	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
 
 	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
@@ -266,7 +266,7 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 	cmd.pSPTDStruct->Cdb[8] = ( responseHeaderSize & 0x00FF );
 
 
-	if ( !this->mp_Drive->executeCommand( &cmd ) )return false;
+	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
 	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
 
@@ -286,7 +286,7 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 	cmd.pSPTDStruct->Cdb[8] = ( responseAllSize & 0x00FF );
 
 
-	if ( !this->mp_Drive->executeCommand( &cmd ) )return false;
+	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
 
 	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;

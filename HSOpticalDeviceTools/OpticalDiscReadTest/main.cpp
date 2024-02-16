@@ -51,63 +51,70 @@ void DriveUnitProcess( char driveLetter ) {
 		return;
 	}
 
-	EHSSCSI_ReadyStatus readyState = drive.checkReady( nullptr );
-	EHSOD_TrayState tray;
+	EHSOD_TrayState tray = drive.checkTrayState( nullptr );
+	printf( "[トレイの状態]  " );
+	switch ( tray ) {
+		case EHSOD_TrayState::Closed:
+			printf( "閉じられています。" );
+			break;
+		case EHSOD_TrayState::Opened:
+			printf( "開かれています。" );
+			break;
+		case EHSOD_TrayState::FailedGotStatus:
+			printf( "状態の取得に失敗しました。" );
+			break;
+		default:
+			printf( "未定義の状態です。" );
+			break;
 
+	}
+	printf( "\n" );
+
+
+	EHSSCSI_ReadyStatus readyState = drive.checkReady( nullptr );
+	printf( "[ドライブの状態] " );
 	switch ( readyState ) {
 		case EHSSCSI_ReadyStatus::Ready:
-			printf( "ドライブの状態：アクセスする準備ができています。\n" );
+			printf( "アクセスする準備ができています。" );
 			break;
 		case EHSSCSI_ReadyStatus::NotReady:
-			printf( "ドライブの状態：アクセスする準備ができていません。\n" );
-			return;
+			printf( "アクセスする準備ができていません。" );
+			break;
 		case EHSSCSI_ReadyStatus::FailedGotStatus:
-			printf( "ドライブの状態：状態取得に失敗しました。\n" );
-			return;
+			printf( "状態取得に失敗しました。" );
+			break;
 		case EHSSCSI_ReadyStatus::MediumNotPresent:
-			printf( "ドライブの状態：メディアが挿入されていません。\n" );
-
-			tray = drive.checkTrayState( nullptr );
-			if ( tray != EHSOD_TrayState::FailedGotStatus ) {
-				printf( "トレイの状態：" );
-				switch ( tray ) {
-					case EHSOD_TrayState::Closed:
-						printf( "閉じられています。" );
-						break;
-					case EHSOD_TrayState::Opened:
-						printf( "開かれています。" );
-						break;
-				}
-				printf( "\n" );
-			}
-			return;
+			printf( "メディアが挿入されていません。" );
+			break;
 		default:
-			printf( "ドライブの状態：未定義の状態です。\n" );
-			return;
+			printf( "未定義の状態です。" );
+			break;
 	}
+	printf( "\n" );
 
+	if ( readyState != EHSSCSI_ReadyStatus::Ready ) return;
 
 	CHSOpticalDriveGetConfigCmd configcmd( &drive );
 	EHSSCSI_ProfileName mediaType = configcmd.getCurrentProfileName( );
-	printf( "セットされているメディアの種類：%s\n", configcmd.GetProfileNameString( mediaType , false ).c_str() );
+	printf( "[セットされているメディアの種類] %s\n", configcmd.GetProfileNameString( mediaType , false ).c_str() );
 
 	CHSCompactDiscReader reader( &drive );
 
+#if 0
 	THSSCSI_ReadCapacityResponse cap;
-
 	if ( reader.readCapacity( &cap ) ) {
 
 		printf( "\n[READ CAPACITY Command]\n" );
 		printf( "\tLogicalBlockAddress：%u\n", cap.LogicalBlockAddress );
 		printf( "\tBlockLengthInBytes：%u\n", cap.BlockLengthInBytes);
-
-
-
 	}
+#endif
 
-	THSSCSI_TrackResourcesInformation tri;
-	memset( &tri, 0, sizeof( tri ) );
 
+	//THSSCSI_TrackResourcesInformation tri;
+	//memset( &tri, 0, sizeof( tri ) );
+
+#if 1
 	THSSCSI_DiscInformation di;
 	THSSCSI_InterpretedDiscInformation idi;
 
@@ -145,10 +152,10 @@ void DriveUnitProcess( char driveLetter ) {
 		printf( "\tNumberOfOPCTables : %u\n", di.NumberOfOPCTables );
 	}
 
-
+#endif
 	if ( reader.isCDMediaPresent( )) {
 
-#if 0
+#if 1
 		THSSCSI_FormattedTOC toc;
 
 		if ( reader.readFormmatedTOC( &toc, EHSSCSI_AddressFormType::LBA ) ) {
@@ -258,10 +265,11 @@ void DriveUnitProcess( char driveLetter ) {
 
 			printf( "\n" );
 		}
-#else
+#endif
+#if 1
 		THSSCSI_RawTOC rtoc;
 
-		if ( reader.readRawTOC( &rtoc, EHSSCSI_AddressFormType::SplittedMSF ) ) {
+		if ( reader.readRawTOC( &rtoc, EHSSCSI_AddressFormType::LBA ) ) {
 
 			printf( "\n[READ TOC/PMA/ATIP Command (Format=0010b:Raw TOC, AppDefinedAddressType=" );
 
@@ -289,13 +297,13 @@ void DriveUnitProcess( char driveLetter ) {
 				printf( "\t\tDiscType：" );
 				switch ( session.second.DiscType ) {
 					case EHSSCSI_DiscType::Mode1:
-						printf( "Mode1" );
+						printf( "Mode-1" );
 						break;
 					case EHSSCSI_DiscType::CD_I:
 						printf( "CD-I" );
 						break;
 					case EHSSCSI_DiscType::Mode2:
-						printf( "Mode2" );
+						printf( "Mode-2" );
 						break;
 				}
 				

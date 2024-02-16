@@ -377,13 +377,11 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 		} else {
 			currentTrackData.TrackEndAddress.u32Value = pInfo->trackItems[trackIndex + 1].TrackStartAddress.u32Value - 1;
 		}
+		currentTrackData.TrackLength.u32Value = currentTrackData.TrackEndAddress.u32Value - currentTrackData.TrackStartAddress.u32Value + 1;
 
 		switch ( addressType ) {
-			case EHSSCSI_AddressFormType::MergedMSF:
-				currentTrackData.TrackLength.u32Value = currentTrackData.TrackEndAddress.u32Value - currentTrackData.TrackStartAddress.u32Value + 1;
-				break;
+
 			case EHSSCSI_AddressFormType::SplittedMSF:
-				currentTrackData.TrackLength.u32Value = currentTrackData.TrackEndAddress.u32Value - currentTrackData.TrackStartAddress.u32Value + 1;
 				currentTrackData.TrackStartAddress = SplitMSF( currentTrackData.TrackStartAddress );
 				currentTrackData.TrackEndAddress = SplitMSF( currentTrackData.TrackEndAddress );
 				currentTrackData.TrackLength = SplitMSF( currentTrackData.TrackLength );
@@ -391,7 +389,6 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 			case EHSSCSI_AddressFormType::LBA:
 				currentTrackData.TrackStartAddress = MergedMSF_to_LBA( currentTrackData.TrackStartAddress );
 				currentTrackData.TrackEndAddress = MergedMSF_to_LBA( currentTrackData.TrackEndAddress );
-				currentTrackData.TrackLength.i32Value = currentTrackData.TrackEndAddress.i32Value - currentTrackData.TrackStartAddress.i32Value + 1;
 				break;
 		}
 	}

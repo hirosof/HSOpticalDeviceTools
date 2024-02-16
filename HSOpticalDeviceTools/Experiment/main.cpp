@@ -61,7 +61,7 @@ int main( void ) {
 			ConsoleOut_SPTD_RESULT( res, true ,"\t\t" );
 
 
-			EHSOD_TrayState tray = driveExp.checkTrayState( &res );
+			EHSOD_TrayState tray = driveExp.checkTrayState();
 
 			if ( tray != EHSOD_TrayState::FailedGotStatus ) {
 
@@ -192,6 +192,24 @@ int main( void ) {
 			}
 
 
+			THSSCSI_MediaEventStatus mes;
+			HSSCSI_SPTD_RESULT mes_res;
+
+			if ( driveExp.getMediaEventStatus( &mes, &mes_res ) ) {
+				printf( "\n[GET EVENT STATUS NOTIFICATION (Media)]\n" );
+				printf( "\tNotificationClass: 0x%02X\n", mes.header.NotificationClass );
+				printf( "\tSupportedEventClass : 0x%02X\n", mes.header.SupportedEventClass );
+				printf( "\tEventCode : 0x%X\n", mes.EventCode);
+				printf( "\tDoorOrTrayOpen : %s\n", (mes.DoorOrTrayOpen) ? "true" : "false" );
+				printf( "\tMediaPresent : %s\n", ( mes.MediaPresent ) ? "true" : "false" );
+			}
+
+			THSSCSI_MechanismStatus ms;
+			HSSCSI_SPTD_RESULT ms_res;
+			if ( driveExp.getMechanismStatus( &ms, &ms_res ) ) {
+				printf( "\n[getMechanismStatus]\n" );
+				printf( "\tDoorOpen : %s\n", (ms.DoorOpen) ? "true" : "false" );
+			}
 
 
 

@@ -35,7 +35,6 @@ int main( void ) {
 		printf( "\n\n" );
 	}
 
-
 	//printf( "sizeof(THSSCSI_DiscInformationHeader) : %zu\n", sizeof( THSSCSI_DiscInformation ) );
 
 	return 0;
@@ -51,7 +50,8 @@ void DriveUnitProcess( char driveLetter ) {
 		return;
 	}
 
-	EHSOD_TrayState tray = drive.checkTrayState( nullptr );
+	printf( "sizeof THSSCSI_MediaEventStatus: %zu\n", sizeof( THSSCSI_MediaEventStatus ) );
+	EHSOD_TrayState tray = drive.checkTrayState( );
 	printf( "[トレイの状態]  " );
 	switch ( tray ) {
 		case EHSOD_TrayState::Closed:
@@ -367,10 +367,23 @@ void DriveUnitProcess( char driveLetter ) {
 				printf( "\n\t\tリードアウトの開始位置：" );
 				ConsoleWrite_AddressData32( session.second.PointOfLeadOutAreaStart, rtoc.AddressType );
 				printf( "\n\n" );
+
+
+
 			}
 		}
 #endif
 
+#if 0
+		CHSSCSIGeneralBuffer buf;
+
+		drive.spinUp( nullptr, false );
+
+		reader.readAudioTrack( &buf, 2, CHSCompactDiscReader::MakeAddressData32( 0,5 , 0 ), EHSSCSI_AddressFormType::SplittedMSF,
+			CHSCompactDiscReader::MakeAddressData32( 0, 5, 0 ), EHSSCSI_AddressFormType::SplittedMSF );
+
+		drive.spinDown( );
+#endif
 	}
 
 }

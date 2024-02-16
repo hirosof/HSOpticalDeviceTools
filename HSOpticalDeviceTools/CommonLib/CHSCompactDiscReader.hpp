@@ -59,6 +59,8 @@ struct THSSCSI_FormattedTOCInterpretedItem {
 	UHSSCSI_AddressData32 TrackLength;
 };
 
+#pragma warning( push )
+#pragma warning( disable:26495 )
 
 struct THSSCSI_FormattedTOC {
 	EHSSCSI_AddressFormType AddressType;
@@ -71,7 +73,7 @@ struct THSSCSI_FormattedTOC {
 	UHSSCSI_AddressData32 PointOfLeadOutAreaStart;
 };
 
-
+#pragma warning(pop)
 
 struct THSSCSI_RawTOCRawItem {
 	uint8_t SessionNumber;
@@ -110,6 +112,8 @@ struct THSSCSI_RawTOCTrackItem {
 };
 
 
+#pragma warning( push )
+#pragma warning( disable:26495 )
 
 struct THSSCSI_RawTOC {
 	EHSSCSI_AddressFormType AddressType;
@@ -125,7 +129,7 @@ struct THSSCSI_RawTOC {
 	uint8_t CountOfSessions;
 };
 
-
+#pragma warning(pop)
 
 
 
@@ -141,10 +145,6 @@ public:
 	CHSCompactDiscReader( );
 	CHSCompactDiscReader( CHSOpticalDrive* pDrive );
 
-
-
-
-
 	static  UHSSCSI_AddressData32 MergeMSF( UHSSCSI_AddressData32 address );
 	static  UHSSCSI_AddressData32 InverseEndianAddressData32( UHSSCSI_AddressData32 address );
 
@@ -154,6 +154,9 @@ public:
 	static  UHSSCSI_AddressData32 MergedMSF_to_LBA( UHSSCSI_AddressData32 address );
 	static  UHSSCSI_AddressData32 LBA_to_MergedMSF( UHSSCSI_AddressData32 address );
 
+	static UHSSCSI_AddressData32 MakeAddressData32( uint32_t value );
+	static UHSSCSI_AddressData32 MakeAddressData32( uint8_t  m , uint8_t s , uint8_t f );
+
 	static EHSSCSI_TrackType GetTrackTypeFromControl( uint8_t control, bool* pPermittedDigitalCopy = nullptr );
 
 
@@ -162,6 +165,8 @@ public:
 
 	bool readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA );
 	bool readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA );
+
+	size_t readAudioTrack( CHSSCSIGeneralBuffer *pBuffer ,  uint8_t track_number, UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType, UHSSCSI_AddressData32  readSize, EHSSCSI_AddressFormType readSizeAddressType );
 
 
 

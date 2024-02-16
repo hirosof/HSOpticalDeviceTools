@@ -257,6 +257,16 @@ EHSSCSI_ReadyStatus CHSOpticalDrive::checkReady( HSSCSI_SPTD_RESULT* pDetailResu
     return EHSSCSI_ReadyStatus::NotReady;
 }
 
+bool CHSOpticalDrive::isMediaPresent( void ) const {
+    THSSCSI_MediaEventStatus mes;
+
+    if ( this->getMediaEventStatus( &mes, nullptr ) ) {
+        return  mes.MediaPresent;
+    }
+
+    return false;
+}
+
 bool CHSOpticalDrive::ejectMedia( bool asyncWork ) const {
     return this->trayOpen(nullptr , asyncWork);
 }
@@ -322,37 +332,15 @@ bool CHSOpticalDrive::trayClose( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWo
 
 
 bool CHSOpticalDrive::isTrayOpened( void ) const {
-    return this->checkTrayState( nullptr ) == EHSOD_TrayState::Opened;
+    return this->checkTrayState() == EHSOD_TrayState::Opened;
 }
 
-EHSOD_TrayState CHSOpticalDrive::checkTrayState( HSSCSI_SPTD_RESULT* pDetailResult ) const {
-    THSSCSI_CommandData params;
 
-    HSSCSI_InitializeCommandData( &params );
+EHSOD_TrayState CHSOpticalDrive::checkTrayState( void ) const {
 
-    uint8_t  msHeader[8] = { 0 }; //MECHANISM STATUS Header
-
-    params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_IN;
-    params.pSPTDStruct->DataBuffer = msHeader;
-    params.pSPTDStruct->DataTransferLength = static_cast<ULONG>( sizeof( msHeader ) );
-    
-    params.pSPTDStruct->CdbLength = 12;
-    params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_MECHANISM_STATUS;
-    params.pSPTDStruct->Cdb[9] = static_cast<uint8_t>( sizeof( msHeader ) );
-
-    if ( this->executeCommand( &params ) == false ) {
-        return EHSOD_TrayState::FailedGotStatus;
-    }
-
-    if ( pDetailResult != nullptr ) {
-        *pDetailResult = params.result;
-        pDetailResult->resultSize = 0;
-    }
-
-    if ( params.result.DeviceIOControlResult ) {
-        if ( HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {            
-            return ( ( msHeader[1] & 0x10 ) == 0x10 ) ? EHSOD_TrayState::Opened : EHSOD_TrayState::Closed;
-        }
+    THSSCSI_MechanismStatus ms;
+    if ( this->getMechanismStatus( &ms, nullptr ) ) {
+        return ( ms.DoorOpen ) ? EHSOD_TrayState::Opened : EHSOD_TrayState::Closed;
     }
 
     return EHSOD_TrayState::FailedGotStatus;
@@ -470,5 +458,77 @@ bool CHSOpticalDrive::getMaxTransferLength( DWORD* pMaxTransferLength ) const {
     }
 
     return false;
+}
+
+bool CHSOpticalDrive::getMechanismStatus( THSSCSI_MechanismStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult ) const{
+
+    THSSCSI_CommandData params;
+
+    HSSCSI_InitializeCommandData( &params );
+
+    THSSCSI_MechanismStatus  ms;
+
+    params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_IN;
+    params.pSPTDStruct->DataBuffer = &ms;
+    params.pSPTDStruct->DataTransferLength = static_cast<ULONG>( sizeof( ms ) );
+
+    params.pSPTDStruct->CdbLength = 12;
+    params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_MECHANISM_STATUS;
+
+    params.pSPTDStruct->Cdb[8] = ( static_cast<uint8_t>( sizeof( ms ) ) & 0xFF00 ) >> 8;
+    params.pSPTDStruct->Cdb[9] = static_cast<uint8_t>( sizeof( ms ) ) & 0xFF;
+
+
+    if ( this->executeCommand( &params ) == false ) {
+        return false;
+    }
+
+    if ( pDetailResult ) {
+        *pDetailResult = params.result;
+         pDetailResult->resultSize = 0;
+   }
+
+    if ( HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+        *pStatus = ms;
+    }
+
+    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+}
+
+bool CHSOpticalDrive::getMediaEventStatus( THSSCSI_MediaEventStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult ) const{
+    if ( pStatus == nullptr )return false;
+
+    THSSCSI_CommandData params;
+
+    HSSCSI_InitializeCommandData( &params );
+
+    THSSCSI_MediaEventStatus  mes = { 0 };
+
+    params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_IN;
+    params.pSPTDStruct->DataBuffer = &mes;
+    params.pSPTDStruct->DataTransferLength = static_cast<ULONG>( sizeof( mes ) );
+
+    params.pSPTDStruct->CdbLength = 10;
+    params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_GET_EVENT_STATUS_NOTIFICATION;
+    params.pSPTDStruct->Cdb[1] = 1;
+    params.pSPTDStruct->Cdb[4] = 0x10;
+    params.pSPTDStruct->Cdb[7] = ( static_cast<uint8_t>( sizeof( mes ) ) & 0xFF00 ) >> 8;
+    params.pSPTDStruct->Cdb[8] = static_cast<uint8_t>( sizeof( mes ) ) & 0xFF;
+
+    if ( this->executeCommand( &params ) == false ) {
+        return false;
+    }
+
+    if ( pDetailResult ) {
+        *pDetailResult = params.result;
+        pDetailResult->resultSize = 0;
+    }
+
+    if ( HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+        *pStatus = mes;
+    }
+
+
+    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "CHSOpticalDrive.hpp"
 #include "CHSOpticalDriveGetConfigCmd.hpp"
-
+#include "CHSSCSIGeneralBuffer.hpp"
 
 #pragma pack(push , 1)
 

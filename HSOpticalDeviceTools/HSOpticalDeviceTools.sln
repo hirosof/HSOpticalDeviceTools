@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpticalDiscReadTest", "Opti
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpticalDriveInformationConsole", "OpticalDriveInformationConsole\OpticalDriveInformationConsole.vcxproj", "{5FFD4778-6E9B-4890-973D-8B624278D125}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HSAudioCDRippingConsole", "HSAudioCDRippingConsole\HSAudioCDRippingConsole.vcxproj", "{501E365B-A767-4109-98EC-89828B4AA487}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -71,6 +73,14 @@ Global
 		{5FFD4778-6E9B-4890-973D-8B624278D125}.Release|x64.Build.0 = Release|x64
 		{5FFD4778-6E9B-4890-973D-8B624278D125}.Release|x86.ActiveCfg = Release|Win32
 		{5FFD4778-6E9B-4890-973D-8B624278D125}.Release|x86.Build.0 = Release|Win32
+		{501E365B-A767-4109-98EC-89828B4AA487}.Debug|x64.ActiveCfg = Debug|x64
+		{501E365B-A767-4109-98EC-89828B4AA487}.Debug|x64.Build.0 = Debug|x64
+		{501E365B-A767-4109-98EC-89828B4AA487}.Debug|x86.ActiveCfg = Debug|Win32
+		{501E365B-A767-4109-98EC-89828B4AA487}.Debug|x86.Build.0 = Debug|Win32
+		{501E365B-A767-4109-98EC-89828B4AA487}.Release|x64.ActiveCfg = Release|x64
+		{501E365B-A767-4109-98EC-89828B4AA487}.Release|x64.Build.0 = Release|x64
+		{501E365B-A767-4109-98EC-89828B4AA487}.Release|x86.ActiveCfg = Release|Win32
+		{501E365B-A767-4109-98EC-89828B4AA487}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

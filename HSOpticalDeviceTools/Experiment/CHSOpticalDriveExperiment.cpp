@@ -1,8 +1,8 @@
 #include "CHSOpticalDriveExperiment.hpp"
 
 bool CHSOpticalDriveExperiment::__notsupport_readMediaSerialNumber( std::vector<uint8_t>* pSerialNumber, HSSCSI_SPTD_RESULT* pDetailResult ) {
-	
-    
+
+
     /*
         確認する限り以下が返ってきたので未サポートである (INVALID COMMAND OPERATION CODE)
         ScsiStatus：0x01
@@ -10,15 +10,15 @@ bool CHSOpticalDriveExperiment::__notsupport_readMediaSerialNumber( std::vector<
         ASC：0x20
         ASCQ：0x00
     */
-    
-    
+
+
     if ( pSerialNumber == nullptr )return false;
 
     THSSCSI_CommandData params;
 
     HSSCSI_InitializeCommandData( &params );
 
-    uint8_t  msnHeader[4] = { 0 }; 
+    uint8_t  msnHeader[4] = { 0 };
 
     params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_IN;
     params.pSPTDStruct->DataBuffer = msnHeader;
@@ -34,6 +34,11 @@ bool CHSOpticalDriveExperiment::__notsupport_readMediaSerialNumber( std::vector<
         return false;
     }
 
+    if ( params.result.DeviceIOControlResult == FALSE ) {
+        return false;
+    }
+
+
     if ( pDetailResult ) {
         *pDetailResult = params.result;
     }
@@ -43,3 +48,5 @@ bool CHSOpticalDriveExperiment::__notsupport_readMediaSerialNumber( std::vector<
 
     return true;
 }
+
+

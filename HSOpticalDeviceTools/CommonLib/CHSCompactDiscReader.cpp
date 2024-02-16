@@ -67,6 +67,21 @@ UHSSCSI_AddressData32 CHSCompactDiscReader::LBA_to_MergedMSF( UHSSCSI_AddressDat
 	return ad32;
 }
 
+UHSSCSI_AddressData32 CHSCompactDiscReader::MakeAddressData32( uint32_t value ) {
+	UHSSCSI_AddressData32 data;
+	data.u32Value = value;
+	return data;
+}
+
+UHSSCSI_AddressData32 CHSCompactDiscReader::MakeAddressData32( uint8_t m, uint8_t s, uint8_t f ) {
+	UHSSCSI_AddressData32 data;
+	data.urawValues[0] = 0;
+	data.urawValues[1] = m;
+	data.urawValues[2] = s;
+	data.urawValues[3] = f;
+	return data;
+}
+
 EHSSCSI_TrackType CHSCompactDiscReader::GetTrackTypeFromControl( uint8_t control, bool* pPermittedDigitalCopy ) {
 
 	if ( pPermittedDigitalCopy ) {
@@ -406,5 +421,115 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 		}
 	}
 	return true;
+}
+
+size_t CHSCompactDiscReader::readAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, 
+	UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType,
+	UHSSCSI_AddressData32 readSize, EHSSCSI_AddressFormType readSizeAddressType ) {
+
+	if ( pBuffer == nullptr ) return 0;
+	if ( this->mp_Drive == nullptr )return 0;
+	size_t read_offset_LBA = 0;
+	switch ( offsetAddressType ) {
+		case EHSSCSI_AddressFormType::SplittedMSF:
+			read_offset_LBA = MergeMSF( offset ).u32Value;
+			break;
+		case EHSSCSI_AddressFormType::MergedMSF:
+			read_offset_LBA = offset.u32Value;
+			break;
+		case EHSSCSI_AddressFormType::LBA:
+			read_offset_LBA = offset.u32Value;
+			break;
+	}
+	
+	size_t read_size_LBA = 0;
+	switch ( readSizeAddressType ) {
+		case EHSSCSI_AddressFormType::SplittedMSF:
+			read_size_LBA = MergeMSF( readSize ).u32Value;
+			break;
+		case EHSSCSI_AddressFormType::MergedMSF:
+			read_size_LBA = readSize.u32Value;
+			break;
+		case EHSSCSI_AddressFormType::LBA:
+			read_size_LBA = readSize.u32Value;
+			break;
+	}
+
+	//printf( "read %zu +  %zu = %zu\n", read_offset_LBA, read_size_LBA, read_offset_LBA + read_size_LBA );
+
+	THSSCSI_RawTOC toc;
+	if ( this->readRawTOC( &toc, EHSSCSI_AddressFormType::LBA ) == false ) {
+		return  0;
+	}
+
+	auto it = toc.trackItems.find( track_number );
+	if ( it == toc.trackItems.end( ) ) {
+		return 0;
+	}
+
+	if ( it->second.TrackType != EHSSCSI_TrackType::Audio2Channel ) {
+		return 0;
+	}
+
+	if ( read_offset_LBA >= it->second.TrackLength.u32Value ) {
+		return 0;
+	}
+
+
+	size_t  real_start_offset = read_offset_LBA + it->second.TrackStartAddress.u32Value;
+	size_t real_end_offset = min( it->second.TrackEndAddress.u32Value, real_start_offset + read_size_LBA - 1 );
+	size_t real_read_size = real_end_offset - real_start_offset + 1;
+
+	DWORD transferMaxBytesSize;
+	size_t  read_unit_size = 16;
+	if ( this->mp_Drive->getMaxTransferLength( &transferMaxBytesSize ) ) {
+		read_unit_size = transferMaxBytesSize / NormalCDDATrackSectorSize;
+	}
+
+	size_t  NumberOfReadUnit = real_read_size / read_unit_size;
+	size_t  RestOfReadUnit = real_read_size % read_unit_size;
+	if ( RestOfReadUnit != 0 ) NumberOfReadUnit++;
+
+	if ( pBuffer->prepare( real_read_size * NormalCDDATrackSectorSize ) == false ) {
+		return 0;
+	}
+
+	uint8_t *pTop = pBuffer->getBufferType<uint8_t*>( );
+	uint8_t *pCurrent;
+	DWORD read_result_size;
+	uint32_t  read_result_all_size = 0;
+	BOOL bret;
+	RAW_READ_INFO info;
+	info.TrackMode = CDDA;
+	for ( size_t i = 0; i < NumberOfReadUnit; i++ ) {
+		info.DiskOffset.QuadPart = ( real_start_offset + i* read_unit_size) *2048;
+		info.SectorCount = static_cast<DWORD>( read_unit_size);
+		if ( ( i + 1 ) == NumberOfReadUnit ) {
+			if ( RestOfReadUnit != 0 ) {
+				info.SectorCount = static_cast<DWORD>( RestOfReadUnit);
+			}
+		}
+		pCurrent = pTop + ( NormalCDDATrackSectorSize * i * read_unit_size );
+
+		//printf( "RRI =  %zu + %u sector =  %zu\n", real_start_offset +  i * read_unit_size, info.SectorCount,
+		//	real_start_offset + i * read_unit_size + info.SectorCount );
+		//printf( "\t  %zu\n", NormalCDDATrackSectorSize * i * read_unit_size );
+
+		bret = DeviceIoControl( this->mp_Drive->getHandle( ), IOCTL_CDROM_RAW_READ,
+			&info, static_cast<DWORD>( sizeof( RAW_READ_INFO ) ),
+			pCurrent, static_cast<DWORD>( (real_read_size - i*read_unit_size)  * NormalCDDATrackSectorSize), &read_result_size, nullptr );
+		
+		if ( bret == FALSE ) {
+			break;
+		}
+
+		read_result_all_size += read_result_size;
+		
+		if ( read_result_size != ( info.SectorCount * NormalCDDATrackSectorSize ) ) {
+			break;
+		}
+	}
+
+	return read_result_all_size / NormalCDDATrackSectorSize;
 }
 

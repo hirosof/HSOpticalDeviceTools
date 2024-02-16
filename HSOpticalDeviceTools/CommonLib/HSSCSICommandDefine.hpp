@@ -10,7 +10,7 @@
 #include <vector>
 
 
-#pragma pack(push ,HSSCSICOMMANDDEFINE , 1)
+#pragma pack(push , 1)
 
 union UHSSCSIStatus {
 	struct {
@@ -155,6 +155,7 @@ const uint8_t HSSCSI_CDB_OC_READ_DISC_INFORMATION = 0x51;
 const uint8_t HSSCSI_CDB_OC_READ_CAPACITY = 0x25;
 const uint8_t HSSCSI_CDB_OC_READ_FORMAT_CAPACITIES = 0x23;
 const uint8_t HSSCSI_CDB_OC_READ_TOC_PMA_ATIP = 0x43;
+const uint8_t HSSCSI_CDB_OC_GET_EVENT_STATUS_NOTIFICATION = 0x4A;
 
 
-#pragma pack(pop ,HSSCSICOMMANDDEFINE )
+#pragma pack(pop )

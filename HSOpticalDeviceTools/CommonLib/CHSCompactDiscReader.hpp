@@ -166,7 +166,7 @@ public:
 	bool readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA );
 	bool readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA );
 
-	size_t readAudioTrack( CHSSCSIGeneralBuffer *pBuffer ,  uint8_t track_number, UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType, UHSSCSI_AddressData32  readSize, EHSSCSI_AddressFormType readSizeAddressType );
+	size_t readStereoAudioTrack( CHSSCSIGeneralBuffer *pBuffer ,  uint8_t track_number, UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType, UHSSCSI_AddressData32  readSize, EHSSCSI_AddressFormType readSizeAddressType );
 
 
 

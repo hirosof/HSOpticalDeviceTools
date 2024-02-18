@@ -423,7 +423,7 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 	return true;
 }
 
-size_t CHSCompactDiscReader::readAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, 
+size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, 
 	UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType,
 	UHSSCSI_AddressData32 readSize, EHSSCSI_AddressFormType readSizeAddressType ) {
 
@@ -454,8 +454,6 @@ size_t CHSCompactDiscReader::readAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint
 			read_size_LBA = readSize.u32Value;
 			break;
 	}
-
-	//printf( "read %zu +  %zu = %zu\n", read_offset_LBA, read_size_LBA, read_offset_LBA + read_size_LBA );
 
 	THSSCSI_RawTOC toc;
 	if ( this->readRawTOC( &toc, EHSSCSI_AddressFormType::LBA ) == false ) {
@@ -511,13 +509,14 @@ size_t CHSCompactDiscReader::readAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint
 		}
 		pCurrent = pTop + ( NormalCDDATrackSectorSize * i * read_unit_size );
 
-		//printf( "RRI =  %zu + %u sector =  %zu\n", real_start_offset +  i * read_unit_size, info.SectorCount,
-		//	real_start_offset + i * read_unit_size + info.SectorCount );
-		//printf( "\t  %zu\n", NormalCDDATrackSectorSize * i * read_unit_size );
-
-		bret = DeviceIoControl( this->mp_Drive->getHandle( ), IOCTL_CDROM_RAW_READ,
-			&info, static_cast<DWORD>( sizeof( RAW_READ_INFO ) ),
-			pCurrent, static_cast<DWORD>( (real_read_size - i*read_unit_size)  * NormalCDDATrackSectorSize), &read_result_size, nullptr );
+		bret = DeviceIoControl( this->mp_Drive->getHandle( ),
+			IOCTL_CDROM_RAW_READ,
+			&info,
+			static_cast<DWORD>( sizeof( RAW_READ_INFO ) ),
+			pCurrent,
+			static_cast<DWORD>( (real_read_size - i*read_unit_size)  * NormalCDDATrackSectorSize), 
+			&read_result_size,
+			nullptr );
 		
 		if ( bret == FALSE ) {
 			break;

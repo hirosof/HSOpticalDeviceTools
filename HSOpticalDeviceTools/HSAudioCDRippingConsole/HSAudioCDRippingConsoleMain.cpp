@@ -14,7 +14,7 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 
 int main( void ) {
 
-	SetConsoleTitleA( "OpticalDriveInformationConsole" );
+	SetConsoleTitleA( "HSAudioCDRippingConsole" );
 	setlocale( LC_ALL, "Japanese" );
 
 	THSEnumrateOpticalDriveInfo optical_drives_enum;
@@ -70,6 +70,7 @@ int main( void ) {
 	DriveProcessEntry( optical_drives_enum.Drives[selectedOpticalDriveNumber].Letter );
 	printf( "\n" );
 
+	system( "pause" );
 	return 0;
 }
 
@@ -329,8 +330,10 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	for ( uint32_t block = 0; block < numberOfReadBlocks; block++ ) {
 		pos.u32Value = once_read_size.u32Value * block;
 
-		readSuccessSectorLenth = cdreader.readAudioTrack( &buffer, track.TrackNumber,
-			pos, EHSSCSI_AddressFormType::LBA, once_read_size, EHSSCSI_AddressFormType::LBA );
+		readSuccessSectorLenth = cdreader.readStereoAudioTrack( &buffer,
+			track.TrackNumber,
+			pos, EHSSCSI_AddressFormType::LBA,
+			once_read_size, EHSSCSI_AddressFormType::LBA );
 
 		if ( readSuccessSectorLenth == 0 )break;
 

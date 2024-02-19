@@ -6,6 +6,8 @@
 #include "wave/HSWAVE.hpp"
 #include "hash/HSSHA2.hpp"
 
+#pragma comment(lib,"winmm.lib")
+
 std::string Console_ReadLine( );
 
 void DriveProcessEntry( char driveletter );
@@ -16,7 +18,7 @@ int main( void ) {
 
 	SetConsoleTitleA( "HSAudioCDRippingConsole" );
 	setlocale( LC_ALL, "Japanese" );
-
+	
 	THSEnumrateOpticalDriveInfo optical_drives_enum;
 	if ( CHSOpticalDrive::EnumOpticalDrive( &optical_drives_enum ) == false ) {
 		printf( "ŒõŠwƒhƒ‰ƒCƒu‚Ì—ñ‹“‚ÉŽ¸”s‚µ‚Ü‚µ‚½\n" );
@@ -327,6 +329,12 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	pDrive->spinUp( nullptr, false );
 	pWaveWriter->BeginDataChunk( );
 
+	DWORD startTime = timeGetTime( );
+	DWORD processTime;
+	size_t currentPositionSector;
+	uint32_t speed_sector_per_sec;
+	uint32_t rest_time_ms;
+
 	for ( uint32_t block = 0; block < numberOfReadBlocks; block++ ) {
 		pos.u32Value = once_read_size.u32Value * block;
 
@@ -338,12 +346,24 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 		if ( readSuccessSectorLenth == 0 )break;
 
 		pWaveWriter->AdditionalDataChunkContent( buffer.getBuffer( ),
-			static_cast<uint32_t>( readSuccessSectorLenth * CHSCompactDiscReader::NormalCDDATrackSectorSize ));
-		
-		printf( "\r\t%.2f%% (%zu / %u sectors) complete.", (block+1) * 100.0 / numberOfReadBlocks , 
-			once_read_size.u32Value * block + readSuccessSectorLenth  , track.TrackLength.u32Value );
+			static_cast<uint32_t>( readSuccessSectorLenth * CHSCompactDiscReader::NormalCDDATrackSectorSize ) );
+
+		currentPositionSector = pos.u32Value + readSuccessSectorLenth;
+		printf( "\r\t%.2f%% (%zu / %u sectors) Š®—¹", ( block + 1 ) * 100.0 / numberOfReadBlocks,
+			currentPositionSector, track.TrackLength.u32Value );
+
+		processTime = timeGetTime( ) - startTime;
+
+		if ( processTime > 0 ) {
+			speed_sector_per_sec = static_cast<uint32_t>( currentPositionSector * 1000.0 / processTime );
+			rest_time_ms= static_cast<uint32_t>( ( track.TrackLength.u32Value - currentPositionSector ) * 1000.0/ speed_sector_per_sec );
+			printf( ", Žc‚è–ñ %2u.%03u •b,  %u sectors/sec, %u.%03u•bŒo‰ß",
+				rest_time_ms / 1000,  rest_time_ms%1000, speed_sector_per_sec,
+				processTime / 1000, processTime % 1000 );
+		}
 
 	}
+
 	printf( "\n" );
 	pWaveWriter->EndDataChunk( );
 	pDrive->spinDown( nullptr, true );

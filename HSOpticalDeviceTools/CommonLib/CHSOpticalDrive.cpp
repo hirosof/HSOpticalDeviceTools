@@ -349,7 +349,6 @@ EHSOD_TrayState CHSOpticalDrive::checkTrayState( void ) const {
 bool CHSOpticalDrive::spinUp( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork ) const {
     THSSCSI_CommandData params;
 
-
     HSSCSI_InitializeCommandData( &params );
 
     params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
@@ -384,6 +383,33 @@ bool CHSOpticalDrive::spinDown( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
     params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_START_STOP_UNIT;
     params.pSPTDStruct->Cdb[1] = ( asyncWork ) ? 0x1 : 0x0;
     params.pSPTDStruct->Cdb[4] = 0x00;
+
+    if ( this->executeCommand( &params ) == false ) {
+        return false;
+    }
+
+    if ( pDetailResult != nullptr ) {
+        *pDetailResult = params.result;
+        pDetailResult->resultSize = 0;
+    }
+
+    if ( params.result.DeviceIOControlResult == FALSE ) return false;
+
+    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+}
+
+bool CHSOpticalDrive::setPowerState( uint8_t condition, HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork ) const {
+    THSSCSI_CommandData params;
+
+
+    HSSCSI_InitializeCommandData( &params );
+
+    params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
+
+    params.pSPTDStruct->CdbLength = 6;
+    params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_START_STOP_UNIT;
+    params.pSPTDStruct->Cdb[1] = ( asyncWork ) ? 0x1 : 0x0;
+    params.pSPTDStruct->Cdb[4] = (condition & 0xF) << 4;
 
     if ( this->executeCommand( &params ) == false ) {
         return false;
@@ -531,4 +557,5 @@ bool CHSOpticalDrive::getMediaEventStatus( THSSCSI_MediaEventStatus* pStatus, HS
 
     return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
+
 

@@ -695,7 +695,7 @@ public:
 		if ( lpszString == nullptr ) return false;
 		size_t len = lstrlenW ( lpszString );
 		if ( bWriteNullCharactor ) len++;
-		return this->AdditionalChunkData ( lpszString , len * sizeof(wchar_t));
+		return this->AdditionalChunkData ( lpszString ,static_cast<uint32_t>( len * sizeof(wchar_t)));
 	}
 
 	template <typename U> bool AdditionalChunkTypeData ( U typeData ) {
@@ -780,7 +780,7 @@ public:
 		return false;
 	}
 
-	bool BeginListChunk ( char *lpType ) {
+	bool BeginListChunk (const char *lpType ) {
 		if ( this->BeginChunk ( "LIST" ) ) {
 			std::string typeStr;
 			if ( HSMakeRiffChunkFourCC ( lpType , &typeStr ) ) {
@@ -802,7 +802,7 @@ public:
 		}
 		return false;
 	}
-	bool BeginListMemberChunk ( char *lpChunkName ) {
+	bool BeginListMemberChunk (const char *lpChunkName ) {
 		if ( this->IsCreated ( ) ) {
 			if ( this->Mode == WriteMode::ListChunkWrite ) {
 				LARGE_INTEGER zero , pos;
@@ -911,7 +911,7 @@ public:
 		return this->WriteListMemberChunk ( lpChunkName , &typeData , sizeof ( U ) );
 	}
 
-	bool WriteListMemberChunkString ( char *lpChunkName , const char *lpszString , bool bWriteNullCharactor = true ) {
+	bool WriteListMemberChunkString (const char *lpChunkName , const char *lpszString , bool bWriteNullCharactor = true ) {
 		if ( this->BeginListMemberChunk ( lpChunkName ) ) {
 			if ( this->AdditionalListMemberChunkStringData ( lpszString , bWriteNullCharactor ) ) {
 				if ( this->EndListMemberChunk ( ) ) {
@@ -922,7 +922,7 @@ public:
 		return false;
 	}
 
-	bool WriteListMemberChunkString ( wchar_t *lpChunkName , const char *lpszString , bool bWriteNullCharactor = true ) {
+	bool WriteListMemberChunkString ( const char *lpChunkName , const wchar_t *lpszString , bool bWriteNullCharactor = true ) {
 		if ( this->BeginListMemberChunk ( lpChunkName ) ) {
 			if ( this->AdditionalListMemberChunkStringData ( lpszString , bWriteNullCharactor ) ) {
 				if ( this->EndListMemberChunk ( ) ) {

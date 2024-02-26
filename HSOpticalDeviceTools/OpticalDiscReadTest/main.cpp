@@ -3,7 +3,7 @@
 #include "../CommonLib/CHSCompactDiscReader.hpp"
 
 void DriveUnitProcess( char driveLetter );
-
+void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res, bool firstNewLine = true, std::string prefix = "" );
 void ConsoleWrite_AddressData32( UHSSCSI_AddressData32 address, EHSSCSI_AddressFormType type );
 
 int main( void ) {
@@ -155,10 +155,16 @@ void DriveUnitProcess( char driveLetter ) {
 #endif
 	if ( reader.isCDMediaPresent( )) {
 
-#if 1
+		if ( reader.setSpeedMax(  ) ) {
+			printf( "max speed OK\n" );
+		}
+		//drive.spinUp( nullptr, false );
+		//drive.setPowerState( 3  , nullptr , false);
+
+#if 0
 		THSSCSI_FormattedTOC toc;
 
-		if ( reader.readFormmatedTOC( &toc, EHSSCSI_AddressFormType::LBA ) ) {
+		if ( reader.readFormmatedTOC( &toc, EHSSCSI_AddressFormType::MergedMSF ) ) {
 
 			printf( "\n[READ TOC/PMA/ATIP Command (Format=0000b:Formatted TOC, AppDefinedAddressType=" );
 			
@@ -266,7 +272,7 @@ void DriveUnitProcess( char driveLetter ) {
 			printf( "\n" );
 		}
 #endif
-#if 1
+#if 0
 		THSSCSI_RawTOC rtoc;
 
 		if ( reader.readRawTOC( &rtoc, EHSSCSI_AddressFormType::LBA ) ) {
@@ -384,6 +390,8 @@ void DriveUnitProcess( char driveLetter ) {
 
 		drive.spinDown( );
 #endif
+
+	
 	}
 
 }
@@ -403,4 +411,17 @@ void ConsoleWrite_AddressData32( UHSSCSI_AddressData32 address, EHSSCSI_AddressF
 			break;
 	}
 
+}
+
+void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res, bool firstNewLine, std::string prefix ) {
+	if ( firstNewLine ) printf( "\n" );
+	printf( "%s[Raw Results]\n", prefix.c_str( ) );
+	printf( "%sOperationCode：0x%02X\n", prefix.c_str( ), res.executedOperationCode );
+	printf( "%sDeviceIOControlResult：0x%02X\n", prefix.c_str( ), res.DeviceIOControlResult );
+	printf( "%sDeviceIOControlLastError：0x%02X\n", prefix.c_str( ), res.DeviceIOControlLastError );
+	printf( "%sScsiStatus：0x%02X\n", prefix.c_str( ), res.scsiStatus.statusByteCode );
+	printf( "%sSK：0x%02X\n", prefix.c_str( ), res.scsiSK );
+	printf( "%sASC：0x%02X\n", prefix.c_str( ), res.scsiASC );
+	printf( "%sASCQ：0x%02X\n", prefix.c_str( ), res.scsiASCQ );
+	printf( "\n" );
 }

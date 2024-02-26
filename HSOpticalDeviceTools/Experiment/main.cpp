@@ -146,6 +146,8 @@ int main( void ) {
 						fi.Descriptors[i].pHeader->FeatureCode[0],
 						fi.Descriptors[i].pHeader->FeatureCode[1] );
 
+					printf( " (%s)", ( fi.Descriptors[i].pHeader->Current ) ? "E" : "D" );
+
 					if ( ( i + 1 ) != ( fi.Descriptors.size( ) ) )printf( ", " );
 					if ( ( i + 1 ) % 10 == 0 ) printf( "\n\t" );
 				}

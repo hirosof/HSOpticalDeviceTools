@@ -4,6 +4,7 @@
 #include <locale>
 #include "../CommonLib/CHSCompactDiscReader.hpp"
 #include "wave/HSWAVE.hpp"
+#include "hash/HSSHA1.hpp"
 #include "hash/HSSHA2.hpp"
 
 #pragma comment(lib,"winmm.lib")
@@ -237,8 +238,22 @@ void TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 	hash.Finalize( );
 	hash.GetHash( &toc_hash_value );
 
-	printf( "DISC ID  : %s\n", toc_hash_value.ToString( ).c_str( ) );
-	printf( "%s\n", separator.c_str( ) );
+	std::string toc_str = cdreader.getTOCString( );
+
+	printf( "Raw TOC Hash :\n\t%s\n\n", toc_hash_value.ToString( ).c_str( ) );
+	printf( "TOC String  :\n\t%s\n\n", toc_str.c_str( ) );
+
+	hirosof::Hash::CSHA1 mbdiscid_sha1;
+	hirosof::Hash::CSHA1Value mbdiscid_sha1_value;
+	std::string musicBrainzDiscIDSource = cdreader.getMusicBrainzDiscIDSource( );
+	mbdiscid_sha1.Compute( musicBrainzDiscIDSource.c_str( ) );
+	mbdiscid_sha1.GetHash( &mbdiscid_sha1_value );
+
+	printf( "getMusicBrainzDiscIDSourceHash Binary Value:\n\t" );
+	for ( size_t i = 0; i < mbdiscid_sha1_value.Count( ); i++ ) {
+		printf( "%02X ", mbdiscid_sha1_value.GetValue( i ) );
+	}
+	printf( "\n%s\n", separator.c_str( ) );
 
 
 	UINT RippingTrack = 0;
@@ -279,6 +294,15 @@ void TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 
 	if ( wave.Create( output_file_name ) ) {
 
+
+		wave.BeginListChunk( "INFO" );
+
+		wave.WriteListMemberChunkString( "ITOC", musicBrainzDiscIDSource.c_str( ), true );
+		wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ICMT, toc_hash_value.ToString().c_str(), true );
+
+		wave.EndListChunk( );
+
+
 		PCMWAVEFORMAT pcm;
 		pcm.wBitsPerSample = 16;
 		pcm.wf.wFormatTag = WAVE_FORMAT_PCM;
@@ -315,6 +339,7 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	if ( pWaveWriter == nullptr ) return;
 
 	CHSCompactDiscReader cdreader( pDrive );
+	cdreader.setSpeedMax( );
 
 	UHSSCSI_AddressData32 once_read_size = CHSCompactDiscReader::MakeAddressData32( 0, 1, 0 );
 	once_read_size = CHSCompactDiscReader::MergeMSF( once_read_size );
@@ -330,10 +355,10 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	pWaveWriter->BeginDataChunk( );
 
 	DWORD startTime = timeGetTime( );
-	DWORD processTime;
+	DWORD processTime , processTimeSec;
 	size_t currentPositionSector;
 	uint32_t speed_sector_per_sec;
-	uint32_t rest_time_ms;
+	uint32_t rest_time_ms, rest_time_sec;
 
 	for ( uint32_t block = 0; block < numberOfReadBlocks; block++ ) {
 		pos.u32Value = once_read_size.u32Value * block;
@@ -349,7 +374,7 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 			static_cast<uint32_t>( readSuccessSectorLenth * CHSCompactDiscReader::NormalCDDATrackSectorSize ) );
 
 		currentPositionSector = pos.u32Value + readSuccessSectorLenth;
-		printf( "\r\t%.2f%% (%zu / %u sectors) Š®—¹", ( block + 1 ) * 100.0 / numberOfReadBlocks,
+		printf( "\r\t%.2f%%Š®—¹ (%zu / %u sectors)", ( block + 1 ) * 100.0 / numberOfReadBlocks,
 			currentPositionSector, track.TrackLength.u32Value );
 
 		processTime = timeGetTime( ) - startTime;
@@ -357,9 +382,24 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 		if ( processTime > 0 ) {
 			speed_sector_per_sec = static_cast<uint32_t>( currentPositionSector * 1000.0 / processTime );
 			rest_time_ms= static_cast<uint32_t>( ( track.TrackLength.u32Value - currentPositionSector ) * 1000.0/ speed_sector_per_sec );
+
+			processTimeSec = processTime / 1000;
+			rest_time_sec = rest_time_ms / 1000;
+
+#if _DEBUG
 			printf( ", Žc‚è–ñ %2u.%03u •b,  %u sectors/sec, %u.%03u•bŒo‰ß",
 				rest_time_ms / 1000,  rest_time_ms%1000, speed_sector_per_sec,
 				processTime / 1000, processTime % 1000 );
+#else
+
+			printf( "[Žc‚èŽžŠÔ=%02d:%02d][Œo‰ßŽžŠÔ=%02d:%02d]",
+				rest_time_sec / 60, rest_time_sec % 60,
+				processTimeSec / 60, processTimeSec % 60
+			);
+
+#endif
+
+
 		}
 
 	}

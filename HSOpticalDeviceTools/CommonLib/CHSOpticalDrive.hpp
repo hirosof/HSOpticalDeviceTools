@@ -112,7 +112,6 @@ struct THSSCSI_MechanismStatus {
 
 
 
-
 #pragma pack(pop)
 
 
@@ -171,6 +170,7 @@ public:
 
 	bool spinUp( HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
 	bool spinDown( HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
+	bool setPowerState(uint8_t condition ,  HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
 
 
 	EHSOD_AlimentMaskType getAlimentMask(ULONG *pRawAlimentMask )const;
@@ -179,6 +179,8 @@ public:
 
 	bool getMechanismStatus( THSSCSI_MechanismStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult ) const;
 	bool getMediaEventStatus( THSSCSI_MediaEventStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult )const;
+
+
 
 
 };

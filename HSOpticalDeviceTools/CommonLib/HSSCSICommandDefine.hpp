@@ -7,6 +7,8 @@
 
 #include <scsi.h>
 #include <memory>
+#include <string>
+#include <sstream>
 #include <vector>
 
 
@@ -156,6 +158,8 @@ const uint8_t HSSCSI_CDB_OC_READ_CAPACITY = 0x25;
 const uint8_t HSSCSI_CDB_OC_READ_FORMAT_CAPACITIES = 0x23;
 const uint8_t HSSCSI_CDB_OC_READ_TOC_PMA_ATIP = 0x43;
 const uint8_t HSSCSI_CDB_OC_GET_EVENT_STATUS_NOTIFICATION = 0x4A;
+const uint8_t HSSCSI_CDB_OC_GET_PERFORMANCE = 0xAC;
+const uint8_t HSSCSI_CDB_OC_SET_CD_SPEED = 0xBB;
 
 
 #pragma pack(pop )

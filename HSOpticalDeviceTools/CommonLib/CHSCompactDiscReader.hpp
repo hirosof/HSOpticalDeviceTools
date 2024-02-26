@@ -155,7 +155,7 @@ public:
 	static  UHSSCSI_AddressData32 LBA_to_MergedMSF( UHSSCSI_AddressData32 address );
 
 	static UHSSCSI_AddressData32 MakeAddressData32( uint32_t value );
-	static UHSSCSI_AddressData32 MakeAddressData32( uint8_t  m , uint8_t s , uint8_t f );
+	static UHSSCSI_AddressData32 MakeAddressData32( uint8_t  m, uint8_t s, uint8_t f );
 
 	static EHSSCSI_TrackType GetTrackTypeFromControl( uint8_t control, bool* pPermittedDigitalCopy = nullptr );
 
@@ -163,11 +163,14 @@ public:
 	bool isCDMediaPresent( void ) const;
 	bool isSupportedCDText( void ) const;
 
-	bool readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA );
-	bool readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA );
+	bool readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA )const;
+	bool readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA )const;
 
-	size_t readStereoAudioTrack( CHSSCSIGeneralBuffer *pBuffer ,  uint8_t track_number, UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType, UHSSCSI_AddressData32  readSize, EHSSCSI_AddressFormType readSizeAddressType );
+	size_t readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType, UHSSCSI_AddressData32  readSize, EHSSCSI_AddressFormType readSizeAddressType )const;
 
+	std::string  getTOCString( const char joinChar = '+' )const;
+	std::string  getMusicBrainzDiscIDSource( void )const;
 
+	bool  setSpeedMax( HSSCSI_SPTD_RESULT* pResult = nullptr )const;
 
 };

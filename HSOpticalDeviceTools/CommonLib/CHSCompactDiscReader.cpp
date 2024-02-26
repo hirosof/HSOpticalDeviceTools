@@ -123,9 +123,10 @@ bool CHSCompactDiscReader::isSupportedCDText( void ) const {
 	return false;
 }
 
-bool CHSCompactDiscReader::readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType ) {
+bool CHSCompactDiscReader::readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType ) const{
 
 	if ( pInfo == nullptr ) return false;
+	if ( this->mp_Drive == nullptr ) return false;
 	if ( this->mp_Drive->isReady( ) == false ) return false;
 	if ( this->isCDMediaPresent( ) == false ) return false;
 
@@ -257,8 +258,9 @@ bool CHSCompactDiscReader::readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCS
 	return true;
 }
 
-bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType ) {
+bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType )  const{
 	if ( pInfo == nullptr ) return false;
+	if ( this->mp_Drive == nullptr ) return false;
 	if ( this->mp_Drive->isReady( ) == false ) return false;
 	if ( this->isCDMediaPresent( ) == false ) return false;
 
@@ -425,7 +427,7 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 
 size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, 
 	UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType,
-	UHSSCSI_AddressData32 readSize, EHSSCSI_AddressFormType readSizeAddressType ) {
+	UHSSCSI_AddressData32 readSize, EHSSCSI_AddressFormType readSizeAddressType ) const{
 
 	if ( pBuffer == nullptr ) return 0;
 	if ( this->mp_Drive == nullptr )return 0;
@@ -514,7 +516,7 @@ size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer
 			&info,
 			static_cast<DWORD>( sizeof( RAW_READ_INFO ) ),
 			pCurrent,
-			static_cast<DWORD>( (real_read_size - i*read_unit_size)  * NormalCDDATrackSectorSize), 
+			static_cast<DWORD>( info.SectorCount * NormalCDDATrackSectorSize),
 			&read_result_size,
 			nullptr );
 		
@@ -532,3 +534,98 @@ size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer
 	return read_result_all_size / NormalCDDATrackSectorSize;
 }
 
+std::string CHSCompactDiscReader::getTOCString( const char joinChar ) const {
+	THSSCSI_RawTOC raw;
+	if ( this->readRawTOC( &raw, EHSSCSI_AddressFormType::MergedMSF ) == false ) {
+		return std::string();
+	}
+	THSSCSI_RawTOCSessionItem sessionItem = raw.sessionItems[raw.FirstSessionNumber];
+
+	std::string s;
+	char buf[16];
+
+	sprintf_s( buf, "%u", sessionItem.FirstTrackNumber );
+	s.append( buf );
+	
+	sprintf_s( buf, "%u", sessionItem.LastTrackNumber );
+	s.push_back( joinChar );
+	s.append( buf );
+
+	sprintf_s( buf, "%u", sessionItem.PointOfLeadOutAreaStart.u32Value );
+	s.push_back( joinChar );
+	s.append( buf );
+	
+
+	for ( uint8_t i = sessionItem.FirstTrackNumber; i <= sessionItem.LastTrackNumber; i++ ) {
+		sprintf_s( buf, "%u", raw.trackItems[i].TrackStartAddress.u32Value );
+		s.push_back( joinChar );
+		s.append( buf );
+	}
+
+	return s;
+}
+
+std::string CHSCompactDiscReader::getMusicBrainzDiscIDSource( void ) const {
+	THSSCSI_RawTOC raw;
+	if ( this->readRawTOC( &raw, EHSSCSI_AddressFormType::MergedMSF ) == false ) {
+		return std::string();
+	}
+	THSSCSI_RawTOCSessionItem sessionItem = raw.sessionItems[raw.FirstSessionNumber];
+
+	std::string s;
+	char buf[16];
+
+	sprintf_s( buf, "%02X", sessionItem.FirstTrackNumber );
+	s.append( buf );
+	
+	sprintf_s( buf, "%02X", sessionItem.LastTrackNumber );
+	s.append( buf );
+
+	sprintf_s( buf, "%08X", sessionItem.PointOfLeadOutAreaStart.u32Value );
+	s.append( buf );
+	
+
+	for (uint8_t  i = 1; i <=99; i++ ) {
+
+		if ( ( i >= sessionItem.FirstTrackNumber ) && ( i <= sessionItem.LastTrackNumber ) ) {
+
+			sprintf_s( buf, "%08X", raw.trackItems[i].TrackStartAddress.u32Value );
+		} else {
+			sprintf_s( buf, "%08X", 0 );
+
+		}
+		s.append( buf );
+	}
+	return s;
+}
+
+
+bool CHSCompactDiscReader::setSpeedMax( HSSCSI_SPTD_RESULT* pResult ) const {
+	THSSCSI_CommandData params;
+
+	HSSCSI_InitializeCommandData( &params );
+
+	params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
+
+	params.pSPTDStruct->CdbLength = 12;
+	params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_SET_CD_SPEED;
+	params.pSPTDStruct->Cdb[1] = 0;
+	params.pSPTDStruct->Cdb[2] = 0xFF;
+	params.pSPTDStruct->Cdb[3] = 0xFF;
+	params.pSPTDStruct->Cdb[4] = 0xFF;
+	params.pSPTDStruct->Cdb[5] = 0xFF;
+
+
+	if ( this->executeRawCommand( &params ) == false ) {
+		return false;
+	}
+
+	if ( pResult != nullptr ) {
+		*pResult = params.result;
+		pResult->resultSize = 0;
+	}
+
+	if ( params.result.DeviceIOControlResult == FALSE ) return false;
+
+	return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+}

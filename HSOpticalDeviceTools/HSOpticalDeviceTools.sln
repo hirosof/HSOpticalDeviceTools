@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpticalDriveInformationCons
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HSAudioCDRippingConsole", "HSAudioCDRippingConsole\HSAudioCDRippingConsole.vcxproj", "{501E365B-A767-4109-98EC-89828B4AA487}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AudioCDPlayTestConsole", "AudioCDPlayTestConsole\AudioCDPlayTestConsole.vcxproj", "{B10684CE-2919-4F0C-98DA-2BC35FCB6820}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -81,6 +83,14 @@ Global
 		{501E365B-A767-4109-98EC-89828B4AA487}.Release|x64.Build.0 = Release|x64
 		{501E365B-A767-4109-98EC-89828B4AA487}.Release|x86.ActiveCfg = Release|Win32
 		{501E365B-A767-4109-98EC-89828B4AA487}.Release|x86.Build.0 = Release|Win32
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Debug|x64.ActiveCfg = Debug|x64
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Debug|x64.Build.0 = Debug|x64
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Debug|x86.ActiveCfg = Debug|Win32
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Debug|x86.Build.0 = Debug|Win32
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Release|x64.ActiveCfg = Release|x64
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Release|x64.Build.0 = Release|x64
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Release|x86.ActiveCfg = Release|Win32
+		{B10684CE-2919-4F0C-98DA-2BC35FCB6820}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

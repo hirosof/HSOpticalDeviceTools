@@ -124,11 +124,11 @@ public:
 
 		memcpy( pPlayData, buf.getBufferType<uint8_t*>( ) + internalOffset , reflectionSize );
 
-		printf( "\tRequest Samples Range：%u～%u\n", ReadPos, ReadPos + ReadSamples - 1 );
-		printf( "\tLBA offset : %u , LBA read Sectors : %u\n", target_offset.u32Value, target_size.u32Value );
-		printf( "\tRequest Top Sample offset  : %u\n", internalOffset );
-		printf( "\tReal Read Size ：%zu sectors (%zu Bytes)\n", loadSize, loadBytesSize );
-		printf( "\tReflection PlayData Size ：%zu Bytes (%zu Samples)\n", reflectionSize, reflectionSize / m_wfex.nBlockAlign );
+		printf( "\t読み込み要求のサンプル範囲：%u～%u\n", ReadPos, ReadPos + ReadSamples - 1 );
+		printf( "\t読み込み対象トラックにおけるLBAオフセット : %u\n\t読み込みセクター数 : %u\n", target_offset.u32Value, target_size.u32Value );
+		printf( "\t読み込み要求の先頭サンプルへのオフセット(バイト単位): %u\n", internalOffset );
+		printf( "\t実際に読み込んだサイズ ：%zu sectors (%zu Bytes)\n", loadSize, loadBytesSize );
+		printf( "\t再生データのバッファに反映した再生データのサイズ ：%zu Bytes (%zu Samples)\n", reflectionSize, reflectionSize / m_wfex.nBlockAlign );
 		printf( "\n" );
 		return static_cast<uint32_t>( reflectionSize );
 	}

@@ -545,15 +545,6 @@ public:
 
 	}
 
-	/*
-	uint32_t  GetCurrentPosition ( void ) {
-		printf ( "\n[GetCurrentPosition Debug Start]\n" );
-		uint32_t ret = rawGetCurrentPosition ( );
-
-		printf ( "GetCurrentPosition Retvalue = %u\n" , ret );
-		printf ( "[GetCurrentPosition Debug End]\n" );
-		return ret;
-	}*/
 	bool SetCurrentPosition ( uint32_t PositionSample ) {
 		return this->SeekTo(PositionSample);
 	}

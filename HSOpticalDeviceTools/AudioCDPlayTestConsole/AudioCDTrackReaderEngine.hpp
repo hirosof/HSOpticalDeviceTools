@@ -16,7 +16,7 @@ private:
 public:
 
 	virtual bool OnSetup( UserDataType UserData ) {
-		printf( "CWaveCallBack::OnSetup" );
+		printf( "AudioCDTrackReaderEngine::OnSetup" );
 		printf( "\n" );
 		this->OnChangeUserData( UserData );
 		return true;
@@ -24,7 +24,7 @@ public:
 
 
 	virtual void OnChangeUserData( UserDataType UserData ) {
-		printf( "CWaveCallBack::OnChangeUserData" );
+		printf( "AudioCDTrackReaderEngine::OnChangeUserData" );
 		printf( "\n" );
 		u_data = UserData;
 		m_reader.SetDrive( u_data.pDrive );
@@ -32,51 +32,53 @@ public:
 
 
 	virtual void OnOpenDevice( WAVEFORMATEX wfex ) {
-		printf( "CWaveCallBack::OnOpenDevice" );
+		printf( "AudioCDTrackReaderEngine::OnOpenDevice" );
 		printf( "\n" );
 
 		this->m_wfex = wfex;
 	}
 	virtual void OnCloseDevice( void ) {
-		printf( "CWaveCallBack::OnCloseDevice" );
+		printf( "AudioCDTrackReaderEngine::OnCloseDevice" );
 		printf( "\n" );
 
 	}
 	virtual void OnPlayDataProcess( void* pPlayData, uint32_t DataSamples ) {
-		printf( "CWaveCallBack::OnPlayDataProcess(%u サンプル)", DataSamples );
+		printf( "AudioCDTrackReaderEngine::OnPlayDataProcess(%u サンプル)", DataSamples );
 		printf( "\n" );
 
 	}
 	virtual void OnPlayBefore( void ) {
-		printf( "CWaveCallBack::OnPlayBefore" );
+		printf( "AudioCDTrackReaderEngine::OnPlayBefore" );
 		printf( "\n" );
+		u_data.pDrive->spinUp( nullptr, false );
 
 	}
 	virtual void OnPlayAfter( void ) {
-		printf( "CWaveCallBack::OnPlayAfter\n" );
+		printf( "AudioCDTrackReaderEngine::OnPlayAfter\n" );
 		printf( "\n" );
 
 	}
 	virtual void OnPlayStop( bool bRepeatFlag, bool UserStopFlag ) {
-		printf( "\nCWaveCallBack::OnPlayStop(Repeat:%d , UserStop:%d)\n", bRepeatFlag, UserStopFlag );
+		printf( "\nAudioCDTrackReaderEngine::OnPlayStop(Repeat:%d , UserStop:%d)\n", bRepeatFlag, UserStopFlag );
 		if ( bRepeatFlag ) printf( "\n[リピート再生します。]\n" );
 		printf( "\n" );
 
 	}
 	virtual void OnPause( void ) {
-		printf( "CWaveCallBack::OnPause" );
+		printf( "AudioCDTrackReaderEngine::OnPause" );
 		printf( "\n" );
+		u_data.pDrive->spinDown( nullptr, true );
 
 	}
 
 	virtual void OnBeroreResume( void ) {
-		printf( "CWaveCallBack::OnBeroreResume" );
+		printf( "AudioCDTrackReaderEngine::OnBeroreResume" );
 		printf( "\n" );
 		u_data.pDrive->spinUp( nullptr, false );
 	}
 
 	virtual void OnResume( void ) {
-		printf( "CWaveCallBack::OnResume" );
+		printf( "AudioCDTrackReaderEngine::OnResume" );
 		printf( "\n" );
 
 	}
@@ -92,6 +94,8 @@ public:
 	}
 
 	uint32_t OnReadPlayData( void* pPlayData, uint32_t ReadPos, uint32_t ReadSamples ) {
+		printf( "\nAudioCDTrackReaderEngine::OnReadPlayData\n");
+
 		UHSSCSI_AddressData32 target_offset , target_size;
 		uint32_t sectorSizeU32 = static_cast<uint32_t>( CHSCompactDiscReader::NormalCDDATrackSectorSize );
 
@@ -114,10 +118,10 @@ public:
 
 		memcpy( pPlayData, buf.getBufferType<uint8_t*>( ) + internalOffset , reflectionSize );
 
-		printf( "\nCWaveCallBack::OnReadPlayData(%u～%u)\n", ReadPos, ReadPos + ReadSamples - 1 );
-		printf( "\tLBA offset : %u , LBA readSize : %u\n", target_offset.u32Value, target_size.u32Value );
-		printf( "\tInternal Bytes offset : %u\n", internalOffset );
-		printf( "\tReal Read Size ：%zu  sectors (%zu Bytes)\n", loadSize, loadBytesSize );
+		printf( "\tRequest Samples Range：%u～%u\n", ReadPos, ReadPos + ReadSamples - 1 );
+		printf( "\tLBA offset : %u , LBA read Sectors : %u\n", target_offset.u32Value, target_size.u32Value );
+		printf( "\tRequest Top Sample offset  : %u\n", internalOffset );
+		printf( "\tReal Read Size ：%zu sectors (%zu Bytes)\n", loadSize, loadBytesSize );
 		printf( "\tReflection PlayData Size ：%zu Bytes (%zu Samples)\n", reflectionSize, reflectionSize / m_wfex.nBlockAlign );
 		printf( "\n" );
 		return static_cast<uint32_t>( reflectionSize );

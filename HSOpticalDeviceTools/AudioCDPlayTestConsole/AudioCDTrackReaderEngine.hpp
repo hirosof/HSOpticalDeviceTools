@@ -50,7 +50,9 @@ public:
 	virtual void OnPlayBefore( void ) {
 		printf( "AudioCDTrackReaderEngine::OnPlayBefore" );
 		printf( "\n" );
+		printf( "\tスピンアップ中..." );
 		u_data.pDrive->spinUp( nullptr, false );
+		printf( "done\n" );
 
 	}
 	virtual void OnPlayAfter( void ) {
@@ -67,14 +69,18 @@ public:
 	virtual void OnPause( void ) {
 		printf( "AudioCDTrackReaderEngine::OnPause" );
 		printf( "\n" );
-		u_data.pDrive->spinDown( nullptr, true );
 
+		printf( "\tスピンダウン中..." );
+		u_data.pDrive->spinDown( nullptr, false );
+		printf( "done\n" );
 	}
 
 	virtual void OnBeroreResume( void ) {
 		printf( "AudioCDTrackReaderEngine::OnBeroreResume" );
 		printf( "\n" );
+		printf( "\tスピンアップ中..." );
 		u_data.pDrive->spinUp( nullptr, false );
+		printf( "done\n" );
 	}
 
 	virtual void OnResume( void ) {

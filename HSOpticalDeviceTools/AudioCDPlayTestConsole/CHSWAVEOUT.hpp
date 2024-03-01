@@ -477,6 +477,7 @@ public:
 		if ( this->hwo == NULL ) return false;
 		EHSWAVEOUT_STATE s = State;
 		if ( s != EHSWAVEOUT_STATE::Pause ) return false;
+		pCallBack->OnBeroreResume( );
 		waveOutRestart ( hwo );
 		State = EHSWAVEOUT_STATE::Play; 
 		pCallBack->OnResume ( );

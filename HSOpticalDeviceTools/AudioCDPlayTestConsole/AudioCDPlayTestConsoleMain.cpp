@@ -363,13 +363,13 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 					case ProgressDialogCloseReason::DiscEjected:
 						printf( "\n【例外発生】\n" );
 						printf( "再生中、メディアがイジェクトされたため再生を中断しました。" );
-						printf( "ドライブ選択画面に戻ります\n" );
+						printf( "ドライブ選択画面に戻ります。\n" );
 						againFlag = RequestAgainFlag::DriveSelect;
 						break;
 					case ProgressDialogCloseReason::Unknown:
 						printf( "\n【例外発生】\n" );
 						printf( "再生中、ドライブの状態に不明な問題が発生したため再生を中断しました。" );
-						printf( "ドライブ選択画面に戻ります\n" );
+						printf( "ドライブ選択画面に戻ります。\n" );
 						againFlag = RequestAgainFlag::DriveSelect;
 						break;
 				}
@@ -422,19 +422,33 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	wchar_t trackStr[64];
 	THSOpticalDriveDeviceInfo di;
 
+	uint8_t PlayableFinalTrackNumber = pData->toc.LastTrackNumber;
+
+	while ( pData->toc.trackItems[PlayableFinalTrackNumber].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
+		PlayableFinalTrackNumber--;
+	}
+
+	wsprintfW( trackStr, L"Track %u / %u\n", 
+		pData->playInformation.track.TrackNumber,
+		PlayableFinalTrackNumber);
+
+	tc.pszMainInstruction = trackStr;
+
+	CAtlStringW titileStr;
+
+	titileStr.Append( L"再生コントロールダイアログ - " );
 	if ( pData->playInformation.pDrive->getCurrentDeviceInfo( &di ) ) {
-		wsprintfW( trackStr, L"[%C:] %S  / Track %02u\n", 
+		titileStr.AppendFormat(L"[%C:] %S  / Track %02u\n",
 			pData->playInformation.pDrive->getCurrentDriveLetter(),
 			di.DeviceName,
 			pData->playInformation.track.TrackNumber );
 
 	} else {
-		wsprintfW( trackStr, L"Track %02u\n", pData->playInformation.track.TrackNumber );
+		titileStr.AppendFormat(L"Track %02u\n", pData->playInformation.track.TrackNumber );
 	}
 
-	tc.pszMainInstruction = trackStr;
 
-	tc.pszWindowTitle = L"再生コントロールダイアログ";
+	tc.pszWindowTitle = titileStr.GetString( );
 	tc.pszContent = L"";	//コールバック先で更新
 
 	tc.pszCollapsedControlText = L"曲情報表示";
@@ -686,18 +700,18 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		uint32_t pos_time = pos_time_ms / 1000;
 		uint32_t length_time = length_time_ms / 1000;
 
-		str.AppendFormat( L"再生位置(時間単位) = %02d:%02d:%02d / %02d:%02d:%02d\n",
+		str.AppendFormat( L"【再生位置】\n時間単位 = %02d:%02d:%02d / %02d:%02d:%02d\n",
 			pos_time / 3600, pos_time % 3600 / 60, pos_time % 60,
 			length_time / 3600, length_time % 3600 / 60, length_time % 60
 		);
 
-		str.AppendFormat( L"再生位置(サンプル単位) = %u / %u\n",
+		str.AppendFormat( L"サンプル単位= %u / %u\n",
 			pwo->GetCurrentPosition( ),
 			length_samples
 		);
 
 		uint32_t PlayPosPermille = pos_time_ms * 1000 / length_time_ms;
-		str.AppendFormat( L"再生位置(％) = %d.%d%%\n\n",
+		str.AppendFormat( L"パーセント単位 = %d.%d%%\n\n",
 			PlayPosPermille / 10, PlayPosPermille % 10
 		);
 

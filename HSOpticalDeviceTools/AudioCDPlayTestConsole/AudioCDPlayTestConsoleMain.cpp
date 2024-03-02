@@ -25,6 +25,12 @@ enum struct RequestAgainFlag {
 	TrackSelect
 };
 
+enum struct ProgressDialogCloseReason {
+	UserOperation = 0,
+	DiscEjected,
+	Unknown
+};
+
 struct TProgressDialogData {
 	CHSWAVEOUT_CDPlayInformation *pwo;
 	CDPlayInformation playInformation;
@@ -34,6 +40,7 @@ struct TProgressDialogData {
 	bool bFirstShowFlag;
 	POINT ptWindow;
 	RequestAgainFlag againFlag;
+	ProgressDialogCloseReason dialogCloseReason;
 };
 
 void HSShowDialog( TProgressDialogData* pData );
@@ -339,6 +346,7 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 				data.pEngine = &engine;
 				data.toc = toc;
 				data.againFlag = RequestAgainFlag::None;
+				data.dialogCloseReason = ProgressDialogCloseReason::UserOperation;
 
 				do {
 					data.bReShowDialogFlag = false;
@@ -349,9 +357,22 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 
 				wo.Close( );
 
-
 				againFlag = data.againFlag;
 
+				switch ( data.dialogCloseReason ) {
+					case ProgressDialogCloseReason::DiscEjected:
+						printf( "\n【例外発生】\n" );
+						printf( "再生中、メディアがイジェクトされたため再生を中断しました。" );
+						printf( "ドライブ選択画面に戻ります\n" );
+						againFlag = RequestAgainFlag::DriveSelect;
+						break;
+					case ProgressDialogCloseReason::Unknown:
+						printf( "\n【例外発生】\n" );
+						printf( "再生中、ドライブの状態に不明な問題が発生したため再生を中断しました。" );
+						printf( "ドライブ選択画面に戻ります\n" );
+						againFlag = RequestAgainFlag::DriveSelect;
+						break;
+				}
 			}
 		}
 	}
@@ -598,8 +619,19 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 							}
 						}
 					}
-					if ( bEnableNextPlayTrack == false ) return S_FALSE;
+					if ( bEnableNextPlayTrack == false ) {
 
+						CAtlStringW  str;
+
+						str.AppendFormat( L"現在のトラックより%sに再生可能なトラックがありません。",
+							( id == HSTaskDialogCustomButton::BackTrack ) ? L"前" : L"後"
+						);
+
+						MessageBoxW( hwnd, str.GetString( ), L"AudioCDPlayTestConsole", MB_OK );
+
+
+						return S_FALSE;
+					}
 
 					pwo->Stop( );
 
@@ -631,7 +663,21 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 
 	} else if ( uNotification == TDN_TIMER ) {
 
-		CAtlStringW  str;
+		EHSSCSI_ReadyStatus drive_state = pData->playInformation.pDrive->checkReady( nullptr );
+		if ( drive_state != EHSSCSI_ReadyStatus::Ready ) {
+
+			pData->dialogCloseReason =
+				( drive_state == EHSSCSI_ReadyStatus::MediumNotPresent )? 
+				ProgressDialogCloseReason::DiscEjected : 
+				ProgressDialogCloseReason::Unknown;
+
+			DestroyWindow( hwnd );
+
+			return S_OK;
+		}
+
+		CAtlStringW str;
+
 		uint32_t pos_time_ms = pwo->GetCurrentPositionTime( );
 		uint32_t length_samples;
 		pData->pEngine->GetLength( &length_samples );
@@ -640,7 +686,7 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		uint32_t pos_time = pos_time_ms / 1000;
 		uint32_t length_time = length_time_ms / 1000;
 
-		str.Format( L"再生位置(時間単位) = %02d:%02d:%02d / %02d:%02d:%02d\n",
+		str.AppendFormat( L"再生位置(時間単位) = %02d:%02d:%02d / %02d:%02d:%02d\n",
 			pos_time / 3600, pos_time % 3600 / 60, pos_time % 60,
 			length_time / 3600, length_time % 3600 / 60, length_time % 60
 		);

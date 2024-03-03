@@ -132,15 +132,65 @@ struct THSSCSI_RawTOC {
 #pragma warning(pop)
 
 
+struct THSSCSI_CDTEXT_PackData {
+	uint8_t PackIndicator1;
+	uint8_t PackIndicator2;
+	uint8_t PackIndicator3;
+	uint8_t CharacterPosition : 4;
+	uint8_t BlockNumber : 3;
+	bool isDoubleByteCharatorCode : 1;
+
+	union {
+		uint8_t single[12];
+		uint16_t dual[6];
+	}TextDataField;
+
+	uint16_t CRC_OR_Reserved;
+};
+
+struct THSSCSI_CDTEXT_ParsedItemNames {
+	std::string Name;
+	std::string PerformerName;
+	std::string SongWriterName;
+	std::string ComposerName;
+	std::string ArrangerName;
+};
+
+
+
+
+struct THSSCSI_CDTEXT_ParsedNames {
+	bool isDoubleByteCharatorCode;
+	THSSCSI_CDTEXT_ParsedItemNames album;
+	std::map< uint8_t, THSSCSI_CDTEXT_ParsedItemNames> trackTitles;
+};
+
+
+
+struct THSSCSI_CDTEXT_Information {
+	THSSCSI_TOC_PMA_ATIP_ResponseHeader header;
+	bool hasItems;
+	std::vector< THSSCSI_CDTEXT_PackData> rawItems;
+	std::map< size_t, THSSCSI_CDTEXT_ParsedNames> parsedItems;
+	uint8_t NumberOfBlocks;
+};
+
+
+
 
 #pragma pack(pop)
 
 class CHSCompactDiscReader : public CHSOpticalDiscReader {
 
+private:
+	static const UINT16  CRCTABLE[256];
+	static const uint8_t NumberOfCDTextReadTry;
+	static bool Crc16( void* lpData, size_t size, UINT16* lpCRC16 );
+
 
 public:
 
-	static size_t NormalCDDATrackSectorSize;
+	static const size_t NormalCDDATrackSectorSize;
 
 	CHSCompactDiscReader( );
 	CHSCompactDiscReader( CHSOpticalDrive* pDrive );
@@ -165,6 +215,10 @@ public:
 
 	bool readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA )const;
 	bool readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA )const;
+
+	bool readCDText( THSSCSI_CDTEXT_Information* pInfo )const;
+
+
 
 	size_t readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType, UHSSCSI_AddressData32  readSize, EHSSCSI_AddressFormType readSizeAddressType )const;
 

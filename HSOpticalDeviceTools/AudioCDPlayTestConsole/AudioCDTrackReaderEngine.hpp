@@ -125,7 +125,7 @@ public:
 		memcpy( pPlayData, buf.getBufferType<uint8_t*>( ) + internalOffset , reflectionSize );
 
 		printf( "\t読み込み要求のサンプル範囲：%u～%u\n", ReadPos, ReadPos + ReadSamples - 1 );
-		printf( "\t読み込み対象トラックにおけるLBAオフセット : %u\n\t読み込みセクター数 : %u\n", target_offset.u32Value, target_size.u32Value );
+		printf( "\t読み込み対象のトラック上におけるLBAオフセット : %u\n\t読み込みセクター数 : %u\n", target_offset.u32Value, target_size.u32Value );
 		printf( "\t読み込み要求の先頭サンプルへのオフセット(バイト単位): %u\n", internalOffset );
 		printf( "\t実際に読み込んだサイズ ：%zu sectors (%zu Bytes)\n", loadSize, loadBytesSize );
 		printf( "\t再生データのバッファに反映した再生データのサイズ ：%zu Bytes (%zu Samples)\n", reflectionSize, reflectionSize / m_wfex.nBlockAlign );

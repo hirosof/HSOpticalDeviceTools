@@ -41,6 +41,8 @@ struct TProgressDialogData {
 	POINT ptWindow;
 	RequestAgainFlag againFlag;
 	ProgressDialogCloseReason dialogCloseReason;
+	THSSCSI_CDTEXT_Information CDTextInfo;
+	uint8_t useCDTextBlockID;
 };
 
 void HSShowDialog( TProgressDialogData* pData );
@@ -49,8 +51,8 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 std::string Console_ReadLine( );
 
 RequestAgainFlag DriveProcessEntry( char driveletter );
-RequestAgainFlag TOCCheckAndSelect( CHSOpticalDrive* pDrive );
-RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , THSSCSI_RawTOC toc );
+RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive );
+RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , THSSCSI_RawTOC toc, THSSCSI_CDTEXT_Information cdtext );
 
 int main( void ) {
 
@@ -196,10 +198,10 @@ RequestAgainFlag DriveProcessEntry( char driveletter ) {
 
 	printf( "問題なし、TOC情報の確認と選択に移行します。\n\n" );
 
-	return TOCCheckAndSelect( &drive );
+	return DiscProcess( &drive );
 }
 
-RequestAgainFlag TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
+RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	if ( pDrive == nullptr ) 		return RequestAgainFlag::None;
 
@@ -224,9 +226,22 @@ RequestAgainFlag TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 		printf( "再生に対応している形式のトラックがありません\n" );
 		return RequestAgainFlag::None;
 	} else {
-		printf( "再生に対応している形式のトラックがありました、トラックリストを出力します。\n" );
+		printf( "再生に対応している形式のトラックがありました、処理を続行します。\n" );
 	}
 
+	THSSCSI_CDTEXT_Information cdtext;
+	printf( "\n【CD-TEXT情報取得】\n" );
+
+	if ( cdreader.readCDText( &cdtext ) ) {
+		if ( cdtext.hasItems ) {
+			printf( "読み込みに成功しました。\n" );
+		} else {
+			printf( "CD-TEXT情報を持っていませんでした。\n" );
+		}
+	} else {
+		cdtext.hasItems = false;
+		printf( "読み込みに失敗しました。\n" );
+	}
 
 	RequestAgainFlag againFlag;
 
@@ -271,26 +286,63 @@ RequestAgainFlag TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 		}
 		printf( "%s\n", separator.c_str( ) );
 
-		UINT RippingTrack = 0;
+
+		if ( cdtext.hasItems ) {
+			uint8_t cdtextBlockID = 0;
+			for ( uint8_t i = 0; i < cdtext.NumberOfBlocks; i++ ) {
+				if ( cdtext.parsedItems[i].isDoubleByteCharatorCode ) {
+					cdtextBlockID = i;
+					break;
+				}
+			}
+
+			size_t songNameMaxLen = 0;
+			size_t currentSongNameLen;
+			for ( uint8_t track_no = rawToc.FirstTrackNumber; track_no <= rawToc.LastTrackNumber; track_no++ ) {
+				currentSongNameLen = cdtext.parsedItems[cdtextBlockID].trackTitles[track_no].Name.length();
+				songNameMaxLen = max( songNameMaxLen, currentSongNameLen );
+			}
+
+			printf( "\n【CD-TEXT情報出力】\n" );
+			printf( "\nアルバム名 : %s\n", cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ) );
+			printf( "アルバムアーティスト : %s\n", cdtext.parsedItems[cdtextBlockID].album.PerformerName.c_str( ) );
+			printf( "\n%s\n", separator.c_str( ) );
+			printf( "[Track] %-*s\tアーティスト名\n", static_cast<int>( songNameMaxLen ), "曲名" );
+
+			printf( "%s\n", separator.c_str( ) );
+
+			for ( uint8_t track_no = rawToc.FirstTrackNumber; track_no <= rawToc.LastTrackNumber; track_no++ ) {
+				printf( "[%5u] %-*s\t%s\n", track_no, static_cast<int>( songNameMaxLen ),
+					cdtext.parsedItems[cdtextBlockID].trackTitles[track_no].Name.c_str( ),
+					cdtext.parsedItems[cdtextBlockID].trackTitles[track_no].PerformerName.c_str( )
+				);
+			}
+			printf( "%s\n", separator.c_str( ) );
+
+			printf( "\n" );
+
+		}
+
+		UINT SelectedTrack = 0;
 
 		printf( "\n【再生するトラックの選択】\n" );
 		printf( "再生するトラック番号を入力してください：" );
-		scanf_s( "%u", &RippingTrack );
+		scanf_s( "%u", &SelectedTrack );
 		(void) Console_ReadLine( );
 
-		if ( ( RippingTrack < rawToc.FirstTrackNumber ) || ( rawToc.LastTrackNumber < RippingTrack ) ) {
+		if ( ( SelectedTrack < rawToc.FirstTrackNumber ) || ( rawToc.LastTrackNumber < SelectedTrack ) ) {
 			printf( "\n不正なトラック番号が指定されました。\n" );
 			return RequestAgainFlag::None;
 		}
 
-		if ( rawToc.trackItems[RippingTrack].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
+		if ( rawToc.trackItems[SelectedTrack].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
 			printf( "\n再生不可能なトラック番号が指定されました。\n" );
 			return RequestAgainFlag::None;
 		}
 
 		printf( "\n【再生処理開始】\n" );
 
-		againFlag = CDPlayMain( pDrive, rawToc.trackItems[RippingTrack], rawToc );
+		againFlag = CDPlayMain( pDrive, rawToc.trackItems[SelectedTrack], rawToc , cdtext );
 
 	} while ( againFlag == RequestAgainFlag::TrackSelect );
 
@@ -298,7 +350,7 @@ RequestAgainFlag TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 }
 
 
-RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , THSSCSI_RawTOC toc ) {
+RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , THSSCSI_RawTOC toc , THSSCSI_CDTEXT_Information cdtext ) {
 
 	if ( pDrive == nullptr ) return RequestAgainFlag::None;
 
@@ -306,7 +358,6 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 
 	CHSCompactDiscReader cdreader( pDrive );
 	cdreader.setSpeedMax( );
-
 
 	pDrive->spinUp( nullptr, false );
 
@@ -347,6 +398,16 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 				data.toc = toc;
 				data.againFlag = RequestAgainFlag::None;
 				data.dialogCloseReason = ProgressDialogCloseReason::UserOperation;
+				data.CDTextInfo = cdtext;
+				data.useCDTextBlockID = 0;
+				if ( cdtext.hasItems ) {
+					for ( uint8_t i = 0; i < cdtext.NumberOfBlocks; i++ ) {
+						if ( cdtext.parsedItems[i].isDoubleByteCharatorCode ) {
+							data.useCDTextBlockID = i;
+							break;
+						}
+					}
+				}
 
 				do {
 					data.bReShowDialogFlag = false;
@@ -711,9 +772,33 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		);
 
 		uint32_t PlayPosPermille = pos_time_ms * 1000 / length_time_ms;
-		str.AppendFormat( L"パーセント単位 = %d.%d%%\n\n",
+		str.AppendFormat( L"パーセント単位 = %d.%d%%",
 			PlayPosPermille / 10, PlayPosPermille % 10
 		);
+
+
+		if ( pData->CDTextInfo.hasItems ) {
+			str.Append( L"\n\n【CD-TEXT情報】\n" );
+
+			str.AppendFormat( L"アルバム名：%S\n",
+				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.Name.c_str( )
+			);
+
+			str.AppendFormat( L"アルバムアーティスト：%S\n",
+				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.PerformerName.c_str( )
+			);
+
+			str.AppendFormat( L"曲名：%S\n",
+				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].Name.c_str()
+			);
+			str.AppendFormat( L"アーティスト：%S",
+				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].PerformerName.c_str( )
+			);
+
+		}
+
+
+		str.Append( L"\n\n" );
 
 		SendMessageW( hwnd, TDM_SET_ELEMENT_TEXT, TDE_CONTENT, (LPARAM) str.GetString( ) );
 		SendMessageW( hwnd, TDM_SET_PROGRESS_BAR_POS, PlayPosPermille, 0 );

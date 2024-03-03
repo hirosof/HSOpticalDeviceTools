@@ -12,7 +12,7 @@
 std::string Console_ReadLine( );
 
 void DriveProcessEntry( char driveletter );
-void TOCCheckAndSelect( CHSOpticalDrive* pDrive );
+void DiscProcess( CHSOpticalDrive* pDrive );
 void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track );
 
 int main( void ) {
@@ -155,12 +155,12 @@ void DriveProcessEntry( char driveletter ) {
 
 	printf( "問題なし、TOC情報の確認と選択に移行します。\n\n" );
 
-	TOCCheckAndSelect( &drive );
+	DiscProcess( &drive );
 }
 
 
 
-void TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
+void DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	if ( pDrive == nullptr ) return;
 
@@ -185,8 +185,22 @@ void TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 		printf( "リッピングに対応している形式のトラックがありません\n" );
 		return;
 	} else {
-		printf( "リッピングに対応している形式のトラックがありました、トラックリストを出力します。\n" );
+		printf( "再生に対応している形式のトラックがありました、処理を続行します。\n" );
+	}
 
+
+	THSSCSI_CDTEXT_Information cdtext;
+	printf( "\n【CD-TEXT情報取得】\n" );
+
+	if ( cdreader.readCDText( &cdtext ) ) {
+		if ( cdtext.hasItems ) {
+			printf( "読み込みに成功しました。\n" );
+		} else {
+			printf( "CD-TEXT情報を持っていませんでした。\n" );
+		}
+	} else {
+		cdtext.hasItems = false;
+		printf( "読み込みに失敗しました。\n" );
 	}
 
 	
@@ -235,6 +249,13 @@ void TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 	for ( auto item : rawToc.rawItems ) {
 		hash.Put( item );
 	}
+
+	if ( cdtext.hasItems ) {
+		for (auto item : cdtext.rawItems) {
+			hash.Put( item );
+		}
+	}
+
 	hash.Finalize( );
 	hash.GetHash( &toc_hash_value );
 
@@ -254,10 +275,44 @@ void TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 		printf( "%02X ", mbdiscid_sha1_value.GetValue( i ) );
 	}
 	printf( "\n%s\n", separator.c_str( ) );
+	uint8_t cdtextBlockID = 0;
 
+	if ( cdtext.hasItems ) {
+		for ( uint8_t i = 0; i < cdtext.NumberOfBlocks; i++ ) {
+			if ( cdtext.parsedItems[i].isDoubleByteCharatorCode ) {
+				cdtextBlockID = i;
+				break;
+			}
+		}
+
+		size_t songNameMaxLen = 0;
+		size_t currentSongNameLen;
+		for ( uint8_t track_no = rawToc.FirstTrackNumber; track_no <= rawToc.LastTrackNumber; track_no++ ) {
+			currentSongNameLen = cdtext.parsedItems[cdtextBlockID].trackTitles[track_no].Name.length( );
+			songNameMaxLen = max( songNameMaxLen, currentSongNameLen );
+		}
+
+		printf( "\n【CD-TEXT情報出力】\n" );
+		printf( "\nアルバム名 : %s\n", cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ) );
+		printf( "アルバムアーティスト : %s\n", cdtext.parsedItems[cdtextBlockID].album.PerformerName.c_str( ) );
+		printf( "\n%s\n", separator.c_str( ) );
+		printf( "[Track] %-*s\tアーティスト名\n", static_cast<int>( songNameMaxLen ), "曲名" );
+
+		printf( "%s\n", separator.c_str( ) );
+
+		for ( uint8_t track_no = rawToc.FirstTrackNumber; track_no <= rawToc.LastTrackNumber; track_no++ ) {
+			printf( "[%5u] %-*s\t%s\n", track_no, static_cast<int>( songNameMaxLen ),
+				cdtext.parsedItems[cdtextBlockID].trackTitles[track_no].Name.c_str( ),
+				cdtext.parsedItems[cdtextBlockID].trackTitles[track_no].PerformerName.c_str( )
+			);
+		}
+		printf( "%s\n", separator.c_str( ) );
+
+		printf( "\n" );
+
+	}
 
 	UINT RippingTrack = 0;
-
 	printf( "\n【リッピングするトラックの選択】\n" );
 	printf( "リッピングするトラック番号を入力してください：" );
 	scanf_s( "%u", &RippingTrack );
@@ -297,11 +352,26 @@ void TOCCheckAndSelect( CHSOpticalDrive* pDrive ) {
 
 		wave.BeginListChunk( "INFO" );
 
-		wave.WriteListMemberChunkString( "ITOC", musicBrainzDiscIDSource.c_str( ), true );
+		if ( cdtext.hasItems ) {
+			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_IPRD,
+				cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ),
+				true );
+			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_INAM,
+				cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].Name.c_str( ),
+				true );
+			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_IART,
+				cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].PerformerName.c_str( ),
+				true );
+		}
+
+		char TrackNumberText[3];
+		sprintf_s( TrackNumberText, "%u", RippingTrack );
+		wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ITRK,TrackNumberText, true );
+
+		wave.WriteListMemberChunkString( "ITOC", toc_str.c_str( ), true );
 		wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ICMT, toc_hash_value.ToString().c_str(), true );
 
 		wave.EndListChunk( );
-
 
 		PCMWAVEFORMAT pcm;
 		pcm.wBitsPerSample = 16;

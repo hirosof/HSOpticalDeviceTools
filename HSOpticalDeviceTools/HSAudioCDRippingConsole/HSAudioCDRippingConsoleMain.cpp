@@ -191,8 +191,11 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	THSSCSI_CDTEXT_Information cdtext;
 	printf( "\n【CD-TEXT情報取得】\n" );
+	printf( "メディアからCD-TEXT情報を読み込んでいます..." );
+	bool cdtextReadResult = cdreader.readCDText( &cdtext );
+	printf( "完了\n" );
 
-	if ( cdreader.readCDText( &cdtext ) ) {
+	if ( cdtextReadResult ) {
 		if ( cdtext.hasItems ) {
 			printf( "読み込みに成功しました。\n" );
 		} else {
@@ -202,7 +205,6 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 		cdtext.hasItems = false;
 		printf( "読み込みに失敗しました。\n" );
 	}
-
 	
 	printf( "\n【リッピング可能なトラックリスト】\n" );
 

@@ -487,8 +487,6 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 	if ( this->isCDMediaPresent( ) == false ) return false;
 	if ( this->isSupportedCDText( ) == false ) return false;
 
-
-
 	THSSCSI_CommandData cmd;
 	THSSCSI_TOC_PMA_ATIP_ResponseHeader resHeaderOnly;
 	size_t responseHeaderSize = sizeof( THSSCSI_TOC_PMA_ATIP_ResponseHeader );
@@ -506,11 +504,9 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 	cmd.pSPTDStruct->Cdb[7] = ( responseHeaderSize & 0xFF00 ) >> 8;
 	cmd.pSPTDStruct->Cdb[8] = ( responseHeaderSize & 0x00FF );
 
-
 	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
 	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
-
 
 	size_t responseAllSize = HSSCSI_InverseEndian16( resHeaderOnly.DataLength ) + 2;
 
@@ -532,7 +528,6 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 	THSSCSI_CDTEXT_PackData* pTopItem = reinterpret_cast<THSSCSI_CDTEXT_PackData*>( resBuffer.get( ) + responseHeaderSize );
 	size_t NumberOfDataElements = ( responseAllSize - responseHeaderSize - paddingBufferSize ) / sizeof( THSSCSI_CDTEXT_PackData );
 	THSSCSI_CDTEXT_PackData* pCurrent;
-
 
 	bool isCrcCheckPass = true;
 	UINT16 real_crc;
@@ -817,7 +812,6 @@ std::string CHSCompactDiscReader::getTOCString( const char joinChar ) const {
 	s.push_back( joinChar );
 	s.append( buf );
 	
-
 	for ( uint8_t i = sessionItem.FirstTrackNumber; i <= sessionItem.LastTrackNumber; i++ ) {
 		sprintf_s( buf, "%u", raw.trackItems[i].TrackStartAddress.u32Value );
 		s.push_back( joinChar );
@@ -868,7 +862,6 @@ bool CHSCompactDiscReader::setSpeedMax( HSSCSI_SPTD_RESULT* pResult ) const {
 	HSSCSI_InitializeCommandData( &params );
 
 	params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
-
 	params.pSPTDStruct->CdbLength = 12;
 	params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_SET_CD_SPEED;
 	params.pSPTDStruct->Cdb[1] = 0;
@@ -876,7 +869,6 @@ bool CHSCompactDiscReader::setSpeedMax( HSSCSI_SPTD_RESULT* pResult ) const {
 	params.pSPTDStruct->Cdb[3] = 0xFF;
 	params.pSPTDStruct->Cdb[4] = 0xFF;
 	params.pSPTDStruct->Cdb[5] = 0xFF;
-
 
 	if ( this->executeRawCommand( &params ) == false ) {
 		return false;

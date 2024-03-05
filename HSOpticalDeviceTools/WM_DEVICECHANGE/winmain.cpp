@@ -245,8 +245,13 @@ LRESULT CALLBACK MainWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp ) {
 			break;
 		case WM_DEVICECHANGE:
 			printf( "WM_DEVICE_CHANGE:\n" );
+#if _WIN64
 			printf( "\tWPARAM：0x%08I64X\n", wp );
 			printf( "\tLPARAM：0x%08I64X\n", lp );
+#else
+			printf( "\tWPARAM：0x%08X\n", wp );
+			printf( "\tLPARAM：0x%08X\n", lp );
+#endif
 			printf( "\n" );
 			if ( wp == DBT_DEVNODES_CHANGED ) {
 

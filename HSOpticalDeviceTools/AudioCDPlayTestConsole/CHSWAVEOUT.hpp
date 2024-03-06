@@ -191,10 +191,13 @@ private:
 			}
 
 		}
-		this->pLastWriteInfo = pwh;
-		MMRESULT mr =  waveOutWrite ( hwo , pwh , sizeof ( WAVEHDR ) );
 
-		printf ( "waveOutWrite Called.(Ret=%d , Type=%d , LastFlag = %d)\n" , mr , WriteType ,this->LastDataWriteFlag);
+		if ( WaitForSingleObject( this->hStopEvent, 0 ) != WAIT_OBJECT_0 ) {
+			this->pLastWriteInfo = pwh;
+			MMRESULT mr = waveOutWrite( hwo, pwh, sizeof( WAVEHDR ) );
+			printf( "waveOutWrite Called.(Ret=%d , Type=%d , LastFlag = %d)\n", mr, WriteType, this->LastDataWriteFlag );
+		}
+
 		return true;
 	}
 
@@ -240,15 +243,14 @@ private:
 		bool bForceEnd;
 		while ( true ) {
 			state = WaitForMultipleObjects ( 3 , hEvents , FALSE , INFINITE );
-			index = state - WAIT_OBJECT_0;
-			if ( index == 2 ) break;
+			if ( WaitForSingleObject( this->hStopEvent, 0 ) == WAIT_OBJECT_0 ) break;
 
+			index = state - WAIT_OBJECT_0;
 			bForceEnd = false;
 			this->local_ThreadProc_Done ( &this->wh [ index ] , &bForceEnd);
 			if ( bForceEnd ) break;
 			ResetEvent ( hEvents [ index ] );
 		}
-//		pCallBack->OnPlayStop ( false , bStopByUser );
 	}
 
 	void local_ThreadProc_Done ( WAVEHDR *lpwh  , bool *pbForceEnd) {
@@ -414,9 +416,12 @@ public:
 		if ( this->hwo == NULL ) return false;
 		if ( State == EHSWAVEOUT_STATE::Stop ) return false;
 
+		waveOutPause( hwo );
+
 		for ( int i = 0; i < 2; i++ ) {
 			wh [ i ].dwUser = 1;
 		}
+
 		waveOutReset ( hwo );
 
 		WaitForSingleObject ( hStopEvent , INFINITE );

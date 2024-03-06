@@ -31,6 +31,11 @@ enum struct ProgressDialogCloseReason {
 	Unknown
 };
 
+enum struct ESecondsToStringFormat {
+	HHMMSS = 0,
+	MMSS
+};
+
 struct TProgressDialogData {
 	CHSWAVEOUT_CDPlayInformation *pwo;
 	CDPlayInformation playInformation;
@@ -43,6 +48,7 @@ struct TProgressDialogData {
 	ProgressDialogCloseReason dialogCloseReason;
 	THSSCSI_CDTEXT_Information CDTextInfo;
 	uint8_t useCDTextBlockID;
+	ESecondsToStringFormat timeFormat;
 };
 
 void HSShowDialog( TProgressDialogData* pData );
@@ -53,6 +59,7 @@ std::string Console_ReadLine( );
 RequestAgainFlag DriveProcessEntry( char driveletter );
 RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive );
 RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , THSSCSI_RawTOC toc, THSSCSI_CDTEXT_Information cdtext );
+CAtlStringW  SecondsToString( uint32_t seconds, ESecondsToStringFormat strFormat = ESecondsToStringFormat::HHMMSS );
 
 int main( void ) {
 
@@ -402,6 +409,8 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 				data.dialogCloseReason = ProgressDialogCloseReason::UserOperation;
 				data.CDTextInfo = cdtext;
 				data.useCDTextBlockID = 0;
+				data.timeFormat = ESecondsToStringFormat::MMSS;
+
 				if ( cdtext.hasItems ) {
 					for ( uint8_t i = 0; i < cdtext.NumberOfBlocks; i++ ) {
 						if ( cdtext.parsedItems[i].isDoubleByteCharatorCode ) {
@@ -449,16 +458,19 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 enum struct HSTaskDialogCustomButton {
 	Test = 200,
 	SeekToTop = 100,
+	SeekToBack60Sec,
 	SeekToBack30Sec,
 	SeekToBack10Sec,
 	SeekToForward10Sec,
 	SeekToForward30Sec,
+	SeekToForward60Sec,
 	PlayEnd,
 	BackTrack,
 	NextTrack,
 	Volume,
 	TrackSelect,
-	DriveChange
+	DriveChange,
+	TimeShowTypeChange
 };
 
 enum struct HSTaskDialogVolumeCustomButton {
@@ -480,7 +492,7 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	tc.dwFlags |= TDF_EXPAND_FOOTER_AREA | TDF_EXPANDED_BY_DEFAULT;
 
 	tc.dwCommonButtons = 0;
-	tc.cxWidth = 360;
+	tc.cxWidth = 400;
 
 	wchar_t trackStr[64];
 	THSOpticalDriveDeviceInfo di;
@@ -524,41 +536,22 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	tc.pszExpandedControlText = L"曲情報非表示";
 
 
-	TASKDIALOG_BUTTON tb[11];
-
-	tb[0].nButtonID = (int) HSTaskDialogCustomButton::SeekToTop;
-	tb[0].pszButtonText = L"最初に戻す";
-
-	tb[1].nButtonID = (int) HSTaskDialogCustomButton::SeekToBack30Sec;
-	tb[1].pszButtonText = L"30秒戻す";
-
-	tb[2].nButtonID = (int) HSTaskDialogCustomButton::SeekToBack10Sec;
-	tb[2].pszButtonText = L"10秒戻す";
-
-	tb[3].nButtonID = (int) HSTaskDialogCustomButton::SeekToForward10Sec;
-	tb[3].pszButtonText = L"10秒進める";
-
-	tb[4].nButtonID = (int) HSTaskDialogCustomButton::SeekToForward30Sec;
-	tb[4].pszButtonText = L"30秒進める";
-
-	tb[5].nButtonID = (int) HSTaskDialogCustomButton::Volume;
-	tb[5].pszButtonText = L"音量設定";
-
-	tb[6].nButtonID = (int) HSTaskDialogCustomButton::BackTrack;
-	tb[6].pszButtonText = L"前のトラック";
-
-	tb[7].nButtonID = (int) HSTaskDialogCustomButton::NextTrack;
-	tb[7].pszButtonText = L"次のトラック";
-
-	tb[8].nButtonID = (int) HSTaskDialogCustomButton::TrackSelect;
-	tb[8].pszButtonText = L"トラック指定変更";
-
-	tb[9].nButtonID = (int) HSTaskDialogCustomButton::DriveChange;
-	tb[9].pszButtonText = L"光学ドライブ変更";
-
-	tb[10].nButtonID = (int) HSTaskDialogCustomButton::PlayEnd;
-	tb[10].pszButtonText = L"再生終了";
-
+	TASKDIALOG_BUTTON tb[] = {
+		{(int) HSTaskDialogCustomButton::SeekToTop,L"最初に戻す"},
+		{(int) HSTaskDialogCustomButton::SeekToBack60Sec,L"-60秒"},
+		{(int) HSTaskDialogCustomButton::SeekToBack30Sec,L"-30秒"},
+		{(int) HSTaskDialogCustomButton::SeekToBack10Sec,L"-10秒"},
+		{(int) HSTaskDialogCustomButton::SeekToForward10Sec,L"+10秒"},
+		{(int) HSTaskDialogCustomButton::SeekToForward30Sec,L"+30秒"},
+		{(int) HSTaskDialogCustomButton::SeekToForward60Sec,L"+60秒"},
+		{(int) HSTaskDialogCustomButton::TimeShowTypeChange,L"時間表示切替"},
+		{(int) HSTaskDialogCustomButton::BackTrack,L"前のトラック"},
+		{(int) HSTaskDialogCustomButton::NextTrack,L"次のトラック"},
+		{(int) HSTaskDialogCustomButton::TrackSelect,L"トラック指定変更"},
+		{(int) HSTaskDialogCustomButton::DriveChange,L"使用ドライブ変更"},
+		{(int) HSTaskDialogCustomButton::Volume,L"音量設定"},
+		{(int) HSTaskDialogCustomButton::PlayEnd,L"再生終了"}
+	};
 
 	tc.cButtons = sizeof( tb ) / sizeof( TASKDIALOG_BUTTON );
 	tc.pButtons = tb;
@@ -573,11 +566,21 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	TaskDialogIndirect( &tc, nullptr, nullptr, &check );
 }
 
-CAtlStringW  SecondsToString( uint32_t seconds ) {
+
+CAtlStringW  SecondsToString( uint32_t seconds, ESecondsToStringFormat strFormat ) {
 	CAtlStringW str;
-	str.Format( L"%02d：%02d：%02d",
-		seconds / 3600, seconds % 3600 / 60, seconds % 60
-	);
+
+	switch ( strFormat ) {
+		case ESecondsToStringFormat::HHMMSS:
+			str.Format( L"%02d：%02d：%02d",	seconds / 3600, seconds % 3600 / 60, seconds % 60);
+			break;
+		case ESecondsToStringFormat::MMSS:
+			str.Format( L"%02d：%02d", seconds / 60, seconds % 60 );
+			break;
+		default:
+			break;
+	}
+
 	return str;
 }
 
@@ -617,6 +620,9 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			case HSTaskDialogCustomButton::SeekToTop:
 				pwo->SeekTo( 0 );
 				break;
+			case HSTaskDialogCustomButton::SeekToBack60Sec:
+				pwo->SeekToBackTime( 60 * 1000 );
+				break;
 			case HSTaskDialogCustomButton::SeekToBack30Sec:
 				pwo->SeekToBackTime( 30 * 1000 );
 				break;
@@ -629,7 +635,16 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			case HSTaskDialogCustomButton::SeekToForward30Sec:
 				pwo->SeekToForwardTime( 30 * 1000 );
 				break;
-
+			case HSTaskDialogCustomButton::SeekToForward60Sec:
+				pwo->SeekToForwardTime( 60 * 1000 );
+				break;
+			case HSTaskDialogCustomButton::TimeShowTypeChange:
+				if ( pData->timeFormat == ESecondsToStringFormat::HHMMSS ) {
+					pData->timeFormat = ESecondsToStringFormat::MMSS;
+				} else {
+					pData->timeFormat = ESecondsToStringFormat::HHMMSS;
+				}
+				break;
 
 			case HSTaskDialogCustomButton::Volume:
 				{
@@ -778,7 +793,12 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		uint32_t PlayPosPermille = static_cast<uint32_t>( pos_sample * 1000.0 / length_samples );
 
 		str.AppendFormat( L"【再生位置 (トラック単位)】\n" );
-		str.AppendFormat( L"時間単位 = %s / %s\n",SecondsToString(pos_time ).GetString(), SecondsToString( length_time ).GetString());
+		
+		str.AppendFormat( L"時間単位 = %s / %s\n",
+			SecondsToString( pos_time, pData->timeFormat ).GetString( ),
+			SecondsToString( length_time, pData->timeFormat ).GetString( )
+		);
+
 		str.AppendFormat( L"サンプル単位= %u / %u\n",pos_sample,	length_samples);
 		str.AppendFormat( L"LBA単位 = %zu / %zu\n",pos_sectors,	length_sectors);
 		str.AppendFormat( L"パーセント単位 = %d.%d%%",PlayPosPermille / 10, PlayPosPermille % 10);
@@ -797,7 +817,12 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		uint32_t PlayPosPermilleOverall = static_cast<uint32_t>( pos_sectors_overall * 1000.0 / length_sectors_overall );
 
 		str.AppendFormat( L"\n\n【再生位置 (ディスク全体)】\n" );
-		str.AppendFormat( L"時間単位 = %s / %s\n",SecondsToString( pos_time_overall ).GetString( ), SecondsToString( length_time_overall ).GetString( ));
+		
+		str.AppendFormat( L"時間単位 = %s / %s\n",
+			SecondsToString( pos_time_overall, pData->timeFormat ).GetString( ),
+			SecondsToString( length_time_overall, pData->timeFormat ).GetString( )
+		);
+
 		str.AppendFormat( L"サンプル単位= %zu / %zu\n",pos_samples_overall,length_samples_overall);
 		str.AppendFormat( L"LBA単位 = %zu / %zu\n",pos_sectors_overall , length_sectors_overall);
 		str.AppendFormat( L"パーセント単位 = %d.%d%%",PlayPosPermilleOverall / 10, PlayPosPermilleOverall % 10);

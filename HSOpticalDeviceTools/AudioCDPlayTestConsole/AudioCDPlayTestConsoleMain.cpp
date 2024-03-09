@@ -60,6 +60,7 @@ RequestAgainFlag DriveProcessEntry( char driveletter );
 RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive );
 RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , THSSCSI_RawTOC toc, THSSCSI_CDTEXT_Information cdtext );
 CAtlStringW  SecondsToString( uint32_t seconds, ESecondsToStringFormat strFormat = ESecondsToStringFormat::HHMMSS );
+CAtlStringW GetCommaSplitNumberString( uint64_t number );
 
 int main( void ) {
 
@@ -532,10 +533,6 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	tc.pszWindowTitle = titileStr.GetString( );
 	tc.pszContent = L"";	//コールバック先で更新
 
-	tc.pszCollapsedControlText = L"曲情報表示";
-	tc.pszExpandedControlText = L"曲情報非表示";
-
-
 	TASKDIALOG_BUTTON tb[] = {
 		{(int) HSTaskDialogCustomButton::SeekToTop,L"最初に戻す"},
 		{(int) HSTaskDialogCustomButton::SeekToBack60Sec,L"-60秒"},
@@ -556,11 +553,35 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	tc.cButtons = sizeof( tb ) / sizeof( TASKDIALOG_BUTTON );
 	tc.pButtons = tb;
 
-
 	tc.pszVerificationText = L"一時停止";
 
-	tc.pszExpandedInformation = nullptr;
-	
+	CAtlStringW  cdTextInfoStr;
+
+	if ( pData->CDTextInfo.hasItems ) {
+		cdTextInfoStr.Append( L"【CD-TEXT情報】\n" );
+		cdTextInfoStr.AppendFormat( L"アルバム名：%S\n",
+			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.Name.c_str( )
+		);
+
+		cdTextInfoStr.AppendFormat( L"アルバムアーティスト：%S\n",
+			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.PerformerName.c_str( )
+		);
+
+		cdTextInfoStr.AppendFormat( L"曲名：%S\n",
+			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].Name.c_str( )
+		);
+		cdTextInfoStr.AppendFormat( L"アーティスト：%S",
+			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].PerformerName.c_str( )
+		);
+
+
+		tc.pszExpandedControlText = L"CD-TEXT情報";
+		tc.pszCollapsedControlText = L"CD-TEXT情報";
+		tc.pszExpandedInformation = cdTextInfoStr.GetString( );
+
+	} else {
+		tc.pszExpandedInformation = nullptr;
+	}
 
 	BOOL check;
 	TaskDialogIndirect( &tc, nullptr, nullptr, &check );
@@ -582,6 +603,48 @@ CAtlStringW  SecondsToString( uint32_t seconds, ESecondsToStringFormat strFormat
 	}
 
 	return str;
+}
+
+
+CAtlStringW GetCommaSplitNumberString( uint64_t number ) {
+
+	CAtlStringW normalStr;
+	normalStr.Format( L"%I64u", number );
+
+	NUMBERFMTW fmt;
+	wchar_t comma[] = L",";
+	wchar_t dot[] = L".";
+
+	fmt.NumDigits = 0;
+	fmt.LeadingZero = 0;
+	fmt.Grouping = 3;
+	fmt.lpDecimalSep = dot;
+	fmt.lpThousandSep = comma;
+	fmt.NegativeOrder = 1;
+
+	int reqlength = GetNumberFormatEx( LOCALE_NAME_INVARIANT,
+		0,
+		normalStr.GetString( ),
+		&fmt,
+		NULL,
+		0
+	);
+
+	if ( reqlength == 0 ) return normalStr;
+
+	std::shared_ptr<wchar_t>  target( new wchar_t[reqlength + 1] );
+
+	int result_length = GetNumberFormatEx( LOCALE_NAME_INVARIANT,
+		0,
+		normalStr.GetString( ),
+		&fmt,
+		target.get( ),
+		reqlength
+	);
+
+	if ( result_length == 0 ) return normalStr;
+
+	return CAtlStringW( target.get( ) );
 }
 
 HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARAM lp, LONG_PTR dwRefData ) {
@@ -790,7 +853,7 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 
 		size_t pos_sectors = pos_sample * pwo->GetFormat( ).nBlockAlign / CHSCompactDiscReader::NormalCDDATrackSectorSize;
 		size_t length_sectors = length_samples * pwo->GetFormat( ).nBlockAlign / CHSCompactDiscReader::NormalCDDATrackSectorSize;
-		uint32_t PlayPosPermille = static_cast<uint32_t>( pos_sample * 1000.0 / length_samples );
+		double PlayPosPercent = pos_sample * 100.0 / length_samples;
 
 		str.AppendFormat( L"【再生位置 (トラック単位)】\n" );
 		
@@ -799,9 +862,17 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			SecondsToString( length_time, pData->timeFormat ).GetString( )
 		);
 
-		str.AppendFormat( L"サンプル単位= %u / %u\n",pos_sample,	length_samples);
-		str.AppendFormat( L"LBA単位 = %zu / %zu\n",pos_sectors,	length_sectors);
-		str.AppendFormat( L"パーセント単位 = %d.%d%%",PlayPosPermille / 10, PlayPosPermille % 10);
+		str.AppendFormat( L"サンプル単位= %s / %s\n", 
+			GetCommaSplitNumberString(pos_sample).GetString(),
+			GetCommaSplitNumberString(length_samples).GetString( )
+		);
+
+		str.AppendFormat( L"LBA単位 = %s / %s\n",
+			GetCommaSplitNumberString( pos_sectors ).GetString( ),
+			GetCommaSplitNumberString( length_sectors ).GetString( )
+		);
+
+		str.AppendFormat( L"パーセント単位 = %.2f%%", PlayPosPercent);
 
 		size_t pos_bytes_additional_offset = pos_sample * pwo->GetFormat( ).nBlockAlign % CHSCompactDiscReader::NormalCDDATrackSectorSize;
 		size_t pos_sectors_overall = pos_sectors + pData->playInformation.track.TrackStartAddress.u32Value;
@@ -814,7 +885,7 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 
 		uint32_t pos_time_overall =  static_cast<uint32_t>( pos_samples_overall / pwo->GetFormat( ).nSamplesPerSec);
 		uint32_t length_time_overall = static_cast<uint32_t>( length_samples_overall / pwo->GetFormat( ).nSamplesPerSec);
-		uint32_t PlayPosPermilleOverall = static_cast<uint32_t>( pos_sectors_overall * 1000.0 / length_sectors_overall );
+		double PlayPosPercentOverall = pos_sectors_overall * 100.0 / length_sectors_overall;
 
 		str.AppendFormat( L"\n\n【再生位置 (ディスク全体)】\n" );
 		
@@ -823,35 +894,24 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			SecondsToString( length_time_overall, pData->timeFormat ).GetString( )
 		);
 
-		str.AppendFormat( L"サンプル単位= %zu / %zu\n",pos_samples_overall,length_samples_overall);
-		str.AppendFormat( L"LBA単位 = %zu / %zu\n",pos_sectors_overall , length_sectors_overall);
-		str.AppendFormat( L"パーセント単位 = %d.%d%%",PlayPosPermilleOverall / 10, PlayPosPermilleOverall % 10);
+		str.AppendFormat( L"サンプル単位= %s / %s\n",
+			GetCommaSplitNumberString( pos_samples_overall ).GetString( ),
+			GetCommaSplitNumberString( length_samples_overall ).GetString( )
+		);
 
-		if ( pData->CDTextInfo.hasItems ) {
-			str.Append( L"\n\n【CD-TEXT情報】\n" );
 
-			str.AppendFormat( L"アルバム名：%S\n",
-				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.Name.c_str( )
-			);
+		str.AppendFormat( L"LBA単位 = %s / %s\n",
+			GetCommaSplitNumberString(pos_sectors_overall).GetString(),
+			GetCommaSplitNumberString(length_sectors_overall).GetString()
+		);
 
-			str.AppendFormat( L"アルバムアーティスト：%S\n",
-				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.PerformerName.c_str( )
-			);
-
-			str.AppendFormat( L"曲名：%S\n",
-				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].Name.c_str()
-			);
-			str.AppendFormat( L"アーティスト：%S",
-				pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].PerformerName.c_str( )
-			);
-
-		}
+		str.AppendFormat( L"パーセント単位 = %.2f%%", PlayPosPercentOverall );
 
 		str.Insert( 0, L"\n" );
 		str.Append( L"\n" );
 
 		SendMessageW( hwnd, TDM_SET_ELEMENT_TEXT, TDE_CONTENT, (LPARAM) str.GetString( ) );
-		SendMessageW( hwnd, TDM_SET_PROGRESS_BAR_POS, PlayPosPermille, 0 );
+		SendMessageW( hwnd, TDM_SET_PROGRESS_BAR_POS, static_cast<WPARAM>( PlayPosPercent * 10 ), 0 );
 
 	} else if ( uNotification == TDN_DESTROYED ) {
 

@@ -588,7 +588,7 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 		pInfo->NumberOfBlocks = max( pInfo->NumberOfBlocks, pCurrent->BlockNumber );
 
 		THSSCSI_CDTEXT_ParsedNames& names = pInfo->parsedItems[pCurrent->BlockNumber];
-		names.isDoubleByteCharatorCode = pCurrent->isDoubleByteCharatorCode;
+		names.isDoubleByteCharatorCode = pCurrent->isDoubleByteCharacterCode;
 
 #if 0
 		printf( "CD-TEXT Pack Data %zu\n", i );
@@ -639,7 +639,7 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 						break;
 				}
 
-				if ( pCurrent->isDoubleByteCharatorCode == false ) {
+				if ( pCurrent->isDoubleByteCharacterCode == false ) {
 					for ( uint8_t idx = rest_offset; idx < 12; idx++ ) {
 						rest_offset = idx + 1;
 						if ( pCurrent->TextDataField.single[idx] == 0 ) {

@@ -138,7 +138,7 @@ struct THSSCSI_CDTEXT_PackData {
 	uint8_t PackIndicator3;
 	uint8_t CharacterPosition : 4;
 	uint8_t BlockNumber : 3;
-	bool isDoubleByteCharatorCode : 1;
+	bool isDoubleByteCharacterCode : 1;
 
 	union {
 		uint8_t single[12];

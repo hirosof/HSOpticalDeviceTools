@@ -479,18 +479,18 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 	return true;
 }
 
-bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const {
+EHSSCSI_CDText_ReadResult CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const {
 
-	if ( pInfo == nullptr ) return false;
-	if ( this->mp_Drive == nullptr ) return false;
-	if ( this->mp_Drive->isReady( ) == false ) return false;
-	if ( this->isCDMediaPresent( ) == false ) return false;
-	if ( this->isSupportedCDText( ) == false ) return false;
+	if ( pInfo == nullptr ) return EHSSCSI_CDText_ReadResult::InvalidParameter;
+	if ( this->mp_Drive == nullptr ) return EHSSCSI_CDText_ReadResult::InvalidParameter;
+	if ( this->mp_Drive->isReady( ) == false ) return EHSSCSI_CDText_ReadResult::NotReady;
+	if ( this->isCDMediaPresent( ) == false ) return EHSSCSI_CDText_ReadResult::NotReady;
+	if ( this->isSupportedCDText( ) == false ) return EHSSCSI_CDText_ReadResult::NotSupported;
 
 	THSSCSI_CommandData cmd;
 	THSSCSI_TOC_PMA_ATIP_ResponseHeader resHeaderOnly;
 	size_t responseHeaderSize = sizeof( THSSCSI_TOC_PMA_ATIP_ResponseHeader );
-	if ( !HSSCSI_InitializeCommandData( &cmd ) )return false;
+	if ( !HSSCSI_InitializeCommandData( &cmd ) )return EHSSCSI_CDText_ReadResult::Failed;
 
 	cmd.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_IN;
 	cmd.pSPTDStruct->DataBuffer = &resHeaderOnly;
@@ -503,19 +503,34 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 	cmd.pSPTDStruct->Cdb[2] = 5;
 	cmd.pSPTDStruct->Cdb[7] = ( responseHeaderSize & 0xFF00 ) >> 8;
 	cmd.pSPTDStruct->Cdb[8] = ( responseHeaderSize & 0x00FF );
+	cmd.pSPTDStruct->TimeOutValue = 5;
 
-	if ( !this->executeRawCommand( &cmd ) )return false;
-	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
-	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
+	pInfo->validHeader = false;
+	pInfo->hasItems = false;
+	pInfo->NumberOfBlocks = 0;
+
+	if ( !this->executeRawCommand( &cmd ) ) {
+		return EHSSCSI_CDText_ReadResult::Failed;
+	}
+
+	if ( cmd.result.DeviceIOControlResult == FALSE ) {
+		if ( cmd.result.DeviceIOControlLastError == ERROR_SEM_TIMEOUT ) {
+			return EHSSCSI_CDText_ReadResult::TimeOut;
+		}
+		return EHSSCSI_CDText_ReadResult::Failed;
+	}
+
+	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
+		return EHSSCSI_CDText_ReadResult::Failed;
+	}
 
 	size_t responseAllSize = HSSCSI_InverseEndian16( resHeaderOnly.DataLength ) + 2;
 
 	if ( responseAllSize == 4 ) {
 		//全レスポンスデータサイズが4の場合はヘッダーのみの為、CD-TEXT本体の情報なし
 		pInfo->header = resHeaderOnly;
-		pInfo->hasItems = false;
-		pInfo->NumberOfBlocks = 0;
-		return true;
+		pInfo->validHeader = true;
+		return EHSSCSI_CDText_ReadResult::Success;
 	}
 
 	size_t restOf8 = responseAllSize % 8;
@@ -540,9 +555,20 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 		cmd.pSPTDStruct->Cdb[7] = ( responseAllSize & 0xFF00 ) >> 8;
 		cmd.pSPTDStruct->Cdb[8] = ( responseAllSize & 0x00FF );
 
-		if ( !this->executeRawCommand( &cmd ) )return false;
-		if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
-		if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
+		if ( !this->executeRawCommand( &cmd ) ) {
+			return EHSSCSI_CDText_ReadResult::Failed;
+		}
+
+		if ( cmd.result.DeviceIOControlResult == FALSE ) {
+			if ( cmd.result.DeviceIOControlLastError == ERROR_SEM_TIMEOUT ) {
+				return EHSSCSI_CDText_ReadResult::TimeOut;
+			}
+			return EHSSCSI_CDText_ReadResult::Failed;
+		}
+
+		if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
+			return EHSSCSI_CDText_ReadResult::Failed;
+		}
 
 		isCrcCheckPass = true;
 
@@ -565,7 +591,7 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 
 	if ( !isCrcCheckPass ) {
 		//CRCチェックに失敗したら読み込み失敗としてfalseを返す
-		return false;
+		return EHSSCSI_CDText_ReadResult::Failed;
 	}
 
 	pInfo->header = *pHeader;
@@ -679,7 +705,7 @@ bool CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Information* pInfo ) const
 
 	pInfo->NumberOfBlocks++;
 
-	return true;
+	return EHSSCSI_CDText_ReadResult::Success;
 }
 
 size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, 

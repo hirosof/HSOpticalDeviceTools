@@ -239,19 +239,22 @@ RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	THSSCSI_CDTEXT_Information cdtext;
 	printf( "\n【CD-TEXT情報取得】\n" );
-	printf( "メディアからCD-TEXT情報を読み込んでいます..." );
-	bool cdtextReadResult = cdreader.readCDText( &cdtext );
+	printf( "CD-TEXT情報をデバイスに照会しています..." );
+	EHSSCSI_CDText_ReadResult cdtextReadResult = cdreader.readCDText( &cdtext );
 	printf( "完了\n" );
 
-	if (cdtextReadResult) {
+	if ( cdtextReadResult == EHSSCSI_CDText_ReadResult::Success ) {
 		if ( cdtext.hasItems ) {
-			printf( "読み込みに成功しました。\n" );
+			printf( "照会の結果：成功しました。\n" );
 		} else {
-			printf( "CD-TEXT情報を持っていませんでした。\n" );
+			printf( "照会の結果：CD-TEXT情報を持っていませんでした。\n" );
 		}
+	}else if(cdtextReadResult == EHSSCSI_CDText_ReadResult::TimeOut ){
+		cdtext.hasItems = false;
+		printf( "照会の結果：タイムアウトしました。\n" );
 	} else {
 		cdtext.hasItems = false;
-		printf( "読み込みに失敗しました。\n" );
+		printf( "照会の結果：タイムアウト以外の要因で失敗しました。\n" );
 	}
 
 	RequestAgainFlag againFlag;

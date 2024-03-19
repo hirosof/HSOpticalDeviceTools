@@ -166,10 +166,20 @@ struct THSSCSI_CDTEXT_ParsedNames {
 };
 
 
+enum struct EHSSCSI_CDText_ReadResult {
+	Success = 0,
+	Failed,
+	InvalidParameter,
+	NotReady,
+	NotFound,
+	NotSupported,
+	TimeOut
+};
 
 struct THSSCSI_CDTEXT_Information {
 	THSSCSI_TOC_PMA_ATIP_ResponseHeader header;
 	bool hasItems;
+	bool validHeader;
 	std::vector< THSSCSI_CDTEXT_PackData> rawItems;
 	std::map< size_t, THSSCSI_CDTEXT_ParsedNames> parsedItems;
 	uint8_t NumberOfBlocks;
@@ -216,7 +226,7 @@ public:
 	bool readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA )const;
 	bool readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFormType addressType = EHSSCSI_AddressFormType::LBA )const;
 
-	bool readCDText( THSSCSI_CDTEXT_Information* pInfo )const;
+	EHSSCSI_CDText_ReadResult readCDText( THSSCSI_CDTEXT_Information* pInfo )const;
 
 
 

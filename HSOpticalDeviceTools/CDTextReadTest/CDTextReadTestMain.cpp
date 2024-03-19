@@ -227,7 +227,7 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	printf( "CD-TEXTì«Ç›çûÇ›íÜ..\n" );
 
 	THSSCSI_CDTEXT_Information info;
-	if ( cdreader.readCDText( &info ) ) {
+	if ( cdreader.readCDText( &info ) == EHSSCSI_CDText_ReadResult::Success) {
 		printf( "done\n\n" );
 
 

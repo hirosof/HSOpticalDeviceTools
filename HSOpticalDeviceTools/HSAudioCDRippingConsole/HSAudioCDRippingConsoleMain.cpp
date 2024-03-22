@@ -2,10 +2,12 @@
 #include <string>
 #include <iostream>
 #include <locale>
+#include <set>
 #include "../CommonLib/CHSCompactDiscReader.hpp"
 #include "wave/HSWAVE.hpp"
 #include "hash/HSSHA1.hpp"
 #include "hash/HSSHA2.hpp"
+#include "RangeSpecifyStringParser.hpp"
 
 #pragma comment(lib,"winmm.lib")
 
@@ -316,26 +318,58 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	}
 
-	UINT RippingTrack = 0;
 	printf( "\n【リッピングするトラックの選択】\n" );
-	printf( "リッピングするトラック番号を入力してください：" );
-	scanf_s( "%u", &RippingTrack );
-	(void) Console_ReadLine( );
+	printf( "\n\t[トラック指定例]\n" );
+	printf( "\t例1) トラック1をリッピングする場合：1\n" );
+	printf( "\t例2) トラック1と3をリッピングする場合：1,3\n" );
+	printf( "\t例3) トラック1から3をリッピングする場合：1-3\n" );
+	printf( "\t例4) トラック1から3とトラック5をリッピングする場合：1-3,5\n\n" );
 
-	if ( ( RippingTrack < rawToc.FirstTrackNumber ) || ( rawToc.LastTrackNumber < RippingTrack ) ) {
-		printf( "\n不正なトラック番号が指定されました。\n" );
+	printf( "\tリッピングするトラックを指定してください (上記のように複数指定可能です)：" );
+	std::string rippingTrackRangesRaw = Console_ReadLine( );
+	RangeValueTypeUVector  rippingTrackRangeValues = RangeSpecifyStringParseUnsigned( rippingTrackRangesRaw );
+
+	std::set<uint32_t>  specifyTracks;
+
+	for ( RangeValueTypeU v : rippingTrackRangeValues ) {
+		for ( uint32_t track_no = v.first; track_no <= v.second; track_no++ ) {
+			if ( track_no < rawToc.FirstTrackNumber ) continue;
+			if ( track_no > rawToc.LastTrackNumber ) break;
+			specifyTracks.insert( track_no );
+		}
+	}
+
+	if ( specifyTracks.empty( ) ) {
+		printf( "\n有効なトラック番号が入力されませんでした。\n" );
 		return;
 	}
 
-	if ( rawToc.trackItems[RippingTrack].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
-		printf( "\nリッピング不可能なトラック番号が指定されました。\n" );
-		return;
+
+	printf( "\n【リッピングを行うトラック番号リスト】\n" );
+
+	uint32_t count = 0 , numberOfUnit=11;
+	bool afterNewline = false;
+	for ( auto it = specifyTracks.begin( ); it != specifyTracks.end( ); it++ ) {
+		count++;
+		afterNewline = false;
+
+		if ( ( it == specifyTracks.begin( ) ) || ( ( count % numberOfUnit ) == 1 ) ) {
+			printf( "\t" );
+
+		} else if ( ( count % numberOfUnit ) != 1 ) {
+			printf( ", " );
+		}
+
+		printf( "%02u" , *it);
+
+		if ( ( count % numberOfUnit ) == 0 ) {
+			printf( "\n" );
+			afterNewline = true;
+		}
+
 	}
 
-	printf( "\n【リッピング状況】\n" );
-	CHSWaveWriterW wave;
-	SYSTEMTIME stf;
-	GetLocalTime( &stf );
+	if(!afterNewline ) 	printf( "\n" );
 
 	wchar_t foldername[] = L"waveout";
 	CreateDirectoryW( foldername, nullptr );
@@ -345,64 +379,112 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	CreateDirectoryW( wshash.c_str( ), nullptr );
 	SetCurrentDirectoryW( wshash.c_str( ) );
 
+	DWORD  sizeOfCurrentDirectoryPath = GetCurrentDirectoryW( 0, nullptr );
+	std::shared_ptr<wchar_t> currentDirectory( new wchar_t[sizeOfCurrentDirectoryPath] );
+	GetCurrentDirectoryW( sizeOfCurrentDirectoryPath, currentDirectory.get( ) );
+
+	std::vector<std::pair<uint32_t, std::wstring>>  ripping_target_track_files;
+	std::pair<uint32_t, std::wstring> ripping_target_track_file_item;
+	uint32_t RippingTrack = 0;
+
+	pDrive->spinUp( nullptr, false );
+	
+	DWORD stTotalStartMS, stTotalTimeSec;
+	stTotalStartMS = timeGetTime( );
+
 	wchar_t output_file_name[260];
-	swprintf_s( output_file_name, L"%04d%02d%02d_%02d%02d%02d_Track-%02u.wav",
-		stf.wYear, stf.wMonth, stf.wDay,
-		stf.wHour, stf.wMinute, stf.wSecond,
-		RippingTrack );
-
-	if ( wave.Create( output_file_name ) ) {
+	SYSTEMTIME stf;
 
 
-		wave.BeginListChunk( "INFO" );
+	printf( "\n【リッピング状況】\n" );
+	
+	count = 0;
+	for ( auto it = specifyTracks.begin( ); it != specifyTracks.end( ); it++ ) {
+		RippingTrack = *it;
 
-		if ( cdtext.hasItems ) {
-			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_IPRD,
-				cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ),
-				true );
-			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_INAM,
-				cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].Name.c_str( ),
-				true );
-			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_IART,
-				cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].PerformerName.c_str( ),
-				true );
+		count++;
+		printf( "\n\t[Track%02u] (%u/%zu)\n", RippingTrack  , count ,specifyTracks.size());
+
+		if ( rawToc.trackItems[RippingTrack].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
+			printf( "\n\t\tリッピング不可能なトラックなためスキップします\n" );
+			continue;
 		}
 
-		char TrackNumberText[3];
-		sprintf_s( TrackNumberText, "%u", RippingTrack );
-		wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ITRK,TrackNumberText, true );
+		GetLocalTime( &stf );
 
-		wave.WriteListMemberChunkString( "ITOC", toc_str.c_str( ), true );
-		wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ICMT, toc_hash_value.ToString().c_str(), true );
+		swprintf_s( output_file_name, L"%04d%02d%02d_%02d%02d%02d_Track-%02u.wav",
+			stf.wYear, stf.wMonth, stf.wDay,
+			stf.wHour, stf.wMinute, stf.wSecond,
+			RippingTrack );
 
-		wave.EndListChunk( );
+		printf( "\n\t\t出力ファイル名：%S\n", output_file_name );
 
-		PCMWAVEFORMAT pcm;
-		pcm.wBitsPerSample = 16;
-		pcm.wf.wFormatTag = WAVE_FORMAT_PCM;
-		pcm.wf.nSamplesPerSec = 44100;
-		pcm.wf.nChannels = 2;
-		pcm.wf.nBlockAlign = pcm.wBitsPerSample / 8 * pcm.wf.nChannels;
-		pcm.wf.nAvgBytesPerSec = pcm.wf.nBlockAlign * pcm.wf.nSamplesPerSec;
-		wave.WriteFormatChunkType( pcm );
+		CHSWaveWriterW wave;
+		if ( wave.Create( output_file_name ) ) {
 
-		RippingMain( &wave, pDrive, rawToc.trackItems[RippingTrack] );
 
-		printf( "\tリッピングが完了しました。\n\n[保存先]\n" );
+			wave.BeginListChunk( "INFO" );
 
-		size_t filename_len = wave.GetCreatedFilePath( nullptr, 0 );
-		wchar_t* pname = new wchar_t[filename_len];
+			if ( cdtext.hasItems ) {
+				wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_IPRD,
+					cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ),
+					true );
+				wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_INAM,
+					cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].Name.c_str( ),
+					true );
+				wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_IART,
+					cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].PerformerName.c_str( ),
+					true );
+			}
 
-		if ( wave.GetCreatedFilePath( pname, filename_len ) > 0 ) {
-			printf( "%S", pname );
+			char TrackNumberText[3];
+			sprintf_s( TrackNumberText, "%u", RippingTrack );
+			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ITRK, TrackNumberText, true );
+
+			wave.WriteListMemberChunkString( "ITOC", toc_str.c_str( ), true );
+			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ICMT, toc_hash_value.ToString( ).c_str( ), true );
+			wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_ISFT, "HSAudioCDRippingConsole" , true );
+
+
+			wave.EndListChunk( );
+
+			PCMWAVEFORMAT pcm;
+			pcm.wBitsPerSample = 16;
+			pcm.wf.wFormatTag = WAVE_FORMAT_PCM;
+			pcm.wf.nSamplesPerSec = 44100;
+			pcm.wf.nChannels = 2;
+			pcm.wf.nBlockAlign = pcm.wBitsPerSample / 8 * pcm.wf.nChannels;
+			pcm.wf.nAvgBytesPerSec = pcm.wf.nBlockAlign * pcm.wf.nSamplesPerSec;
+			wave.WriteFormatChunkType( pcm );
+
+			RippingMain( &wave, pDrive, rawToc.trackItems[RippingTrack] );
+
+			wave.Close( );
+
+			ripping_target_track_file_item.first = RippingTrack;
+			ripping_target_track_file_item.second = output_file_name;
+			ripping_target_track_files.push_back( ripping_target_track_file_item );
+
 		}
 
-		delete[]pname;
+	}
 
-		printf( "\n" );
 
-		wave.Close( );
+	stTotalTimeSec = ( timeGetTime( ) - stTotalStartMS ) / 1000;
 
+	pDrive->spinDown( nullptr, true );
+
+	printf( "\n【リッピング結果】\n\n" );
+
+	printf( "\t[リッピングの総所要時間]\n" );
+	printf( "\t\t%02u:%02u\n\n", stTotalTimeSec / 60, stTotalTimeSec % 60 );
+
+	printf( "\t[出力先フォルダ]\n" );
+	printf( "\t\t%S\n\n", currentDirectory.get( ) );
+
+	printf( "\t[トラックと出力先ファイル]\n" );
+	for ( auto& item : ripping_target_track_files ) {
+		printf( "\t\tTrack%02u：%S\n", item.first, item.second.c_str( ) );
 	}
 }
 
@@ -425,7 +507,6 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	size_t readSuccessSectorLenth;
 	UHSSCSI_AddressData32 pos;
 
-	pDrive->spinUp( nullptr, false );
 	pWaveWriter->BeginDataChunk( );
 
 	DWORD startTime = timeGetTime( );
@@ -448,7 +529,7 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 			static_cast<uint32_t>( readSuccessSectorLenth * CHSCompactDiscReader::NormalCDDATrackSectorSize ) );
 
 		currentPositionSector = pos.u32Value + readSuccessSectorLenth;
-		printf( "\r\t%.2f%%完了 (%zu / %u sectors)", ( block + 1 ) * 100.0 / numberOfReadBlocks,
+		printf( "\r\t\t進捗状況：%.2f%%完了 (%zu / %u sectors)", ( block + 1 ) * 100.0 / numberOfReadBlocks,
 			currentPositionSector, track.TrackLength.u32Value );
 
 		processTime = timeGetTime( ) - startTime;
@@ -460,19 +541,10 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 			processTimeSec = processTime / 1000;
 			rest_time_sec = rest_time_ms / 1000;
 
-#if _DEBUG
-			printf( ", 残り約 %2u.%03u 秒,  %u sectors/sec, %u.%03u秒経過",
-				rest_time_ms / 1000,  rest_time_ms%1000, speed_sector_per_sec,
-				processTime / 1000, processTime % 1000 );
-#else
-
 			printf( "[残り時間=%02d:%02d][経過時間=%02d:%02d]",
 				rest_time_sec / 60, rest_time_sec % 60,
 				processTimeSec / 60, processTimeSec % 60
 			);
-
-#endif
-
 
 		}
 
@@ -480,5 +552,4 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 
 	printf( "\n" );
 	pWaveWriter->EndDataChunk( );
-	pDrive->spinDown( nullptr, true );
 }

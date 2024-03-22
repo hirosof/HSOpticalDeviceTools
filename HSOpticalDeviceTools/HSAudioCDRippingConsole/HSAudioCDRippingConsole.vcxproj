@@ -147,6 +147,7 @@
     <ClCompile Include="hash\HSSHA1.cpp" />
     <ClCompile Include="hash\HSSHA2.cpp" />
     <ClCompile Include="HSAudioCDRippingConsoleMain.cpp" />
+    <ClCompile Include="RangeSpecifyStringParser.cpp" />
     <ClCompile Include="wave\HSRIFF.cpp" />
     <ClCompile Include="wave\HSWaveConverter.cpp" />
     <ClCompile Include="wave\HSWaveMath.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="hash\HSSHA1.hpp" />
     <ClInclude Include="hash\HSSHA2.hpp" />
     <ClInclude Include="hash\HSSHABase.hpp" />
+    <ClInclude Include="RangeSpecifyStringParser.hpp" />
     <ClInclude Include="wave\CHSWaveBuffer.hpp" />
     <ClInclude Include="wave\HSRIFF.hpp" />
     <ClInclude Include="wave\HSWAVE.hpp" />

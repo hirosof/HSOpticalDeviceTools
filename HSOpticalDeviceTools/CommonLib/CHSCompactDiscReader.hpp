@@ -233,7 +233,10 @@ public:
 	size_t readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer, uint8_t track_number, UHSSCSI_AddressData32 offset, EHSSCSI_AddressFormType offsetAddressType, UHSSCSI_AddressData32  readSize, EHSSCSI_AddressFormType readSizeAddressType )const;
 
 	std::string  getTOCString( const char joinChar = '+' )const;
+	static std::string  GetTOCStringStatic(const  THSSCSI_RawTOC *pToc , const char joinChar = '+' );
+
 	std::string  getMusicBrainzDiscIDSource( void )const;
+	static std::string  GetMusicBrainzDiscIDSourceStatic( const  THSSCSI_RawTOC *pToc );
 
 	bool  setSpeedMax( HSSCSI_SPTD_RESULT* pResult = nullptr )const;
 

@@ -3,11 +3,14 @@
 #include <iostream>
 #include <locale>
 #include <set>
+#include <atlbase.h>
+#include <atlstr.h>
 #include "../CommonLib/CHSCompactDiscReader.hpp"
 #include "wave/HSWAVE.hpp"
 #include "hash/HSSHA1.hpp"
 #include "hash/HSSHA2.hpp"
 #include "RangeSpecifyStringParser.hpp"
+#include "CHSBase64.hpp"
 
 #pragma comment(lib,"winmm.lib")
 
@@ -192,24 +195,33 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	THSSCSI_CDTEXT_Information cdtext;
 	printf( "\n【CD-TEXT情報取得】\n" );
+
+	printf( "スピンアップしています..." );
+	pDrive->spinUp( nullptr, false );
+	printf( "完了\n\n" );
+
 	printf( "CD-TEXT情報をデバイスに照会しています..." );
 	EHSSCSI_CDText_ReadResult cdtextReadResult = cdreader.readCDText( &cdtext );
-	printf( "完了\n" );
 
 	if ( cdtextReadResult == EHSSCSI_CDText_ReadResult::Success ) {
 		if ( cdtext.hasItems ) {
-			printf( "照会の結果：成功しました。\n" );
+			printf( "成功しました。\n" );
 		} else {
-			printf( "照会の結果：CD-TEXT情報を持っていませんでした。\n" );
+			printf( "CD-TEXT情報を持っていませんでした。\n" );
 		}
 	} else if ( cdtextReadResult == EHSSCSI_CDText_ReadResult::TimeOut ) {
 		cdtext.hasItems = false;
-		printf( "照会の結果：タイムアウトしました。\n" );
+		printf( "タイムアウトしました。\n" );
 	} else {
 		cdtext.hasItems = false;
-		printf( "照会の結果：タイムアウト以外の要因で失敗しました。\n" );
+		printf( "タイムアウト以外の要因で失敗しました。\n" );
 	}
 	
+	printf( "\nスピンダウンしています..." );
+	pDrive->spinDown( nullptr, false );
+	printf( "完了\n\n" );
+
+
 	printf( "\n【リッピング可能なトラックリスト】\n" );
 
 	std::string separator( 100, '-' );
@@ -265,22 +277,45 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	hash.Finalize( );
 	hash.GetHash( &toc_hash_value );
 
-	std::string toc_str = cdreader.getTOCString( );
+	std::string toc_str = cdreader.GetTOCStringStatic( &rawToc );
 
-	printf( "Raw TOC Hash :\n\t%s\n\n", toc_hash_value.ToString( ).c_str( ) );
-	printf( "TOC String  :\n\t%s\n\n", toc_str.c_str( ) );
+	printf( "Raw TOC Hash:\n\t%s\n\n", toc_hash_value.ToString( ).c_str( ) );
+
+	printf( "TOC String :\n\t%s\n\n", toc_str.c_str());
 
 	hirosof::Hash::CSHA1 mbdiscid_sha1;
 	hirosof::Hash::CSHA1Value mbdiscid_sha1_value;
-	std::string musicBrainzDiscIDSource = cdreader.getMusicBrainzDiscIDSource( );
+	std::string musicBrainzDiscIDSource = cdreader.GetMusicBrainzDiscIDSourceStatic( &rawToc );
 	mbdiscid_sha1.Compute( musicBrainzDiscIDSource.c_str( ) );
 	mbdiscid_sha1.GetHash( &mbdiscid_sha1_value );
 
+
+	hirosof::Hash::CSHA1Value::ElementType mbdiscid_sha1_raw[hirosof::Hash::CSHA1Value::m_ElementSize];
+	for ( size_t i = 0; i < hirosof::Hash::CSHA1Value::m_ElementSize; i++ ) {
+		mbdiscid_sha1_raw[i] = HSSCSI_InverseEndian32(mbdiscid_sha1_value.GetWordValue( i ));
+	}
+	
 	printf( "getMusicBrainzDiscIDSourceHash Binary Value:\n\t" );
 	for ( size_t i = 0; i < mbdiscid_sha1_value.Count( ); i++ ) {
 		printf( "%02X ", mbdiscid_sha1_value.GetValue( i ) );
 	}
-	printf( "\n%s\n", separator.c_str( ) );
+	printf( "\n\n" );
+
+	std::string MusicBrainzDiscID = CHSBase64MusicBrainz<char>::Encode( mbdiscid_sha1_raw, sizeof( mbdiscid_sha1_raw ) );
+	printf( "MusicBrainz DiscID:\n\t" );
+	printf( "%s\n\n", MusicBrainzDiscID.c_str( ) );
+
+	CAtlStringW MusicBrainzDiscIDInfoURLBase;
+
+	MusicBrainzDiscIDInfoURLBase.Format( L"https://musicbrainz.org/ws/2/discid/%S?toc=%S&inc=recordings", MusicBrainzDiscID.c_str( ), toc_str.c_str( ) );
+
+
+	printf( "MusicBrainz DiscID Info URL (Result Type = json):\n\t" );
+	printf( "%S&fmt=json\n\n", MusicBrainzDiscIDInfoURLBase.GetString( ) );
+
+	printf( "MusicBrainz DiscID Info URL (Result Type = xml):\n\t" );
+	printf( "%S&fmt=xml\n", MusicBrainzDiscIDInfoURLBase.GetString( ) );
+
 	uint8_t cdtextBlockID = 0;
 
 	if ( cdtext.hasItems ) {
@@ -323,19 +358,25 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	printf( "\t例1) トラック1をリッピングする場合：1\n" );
 	printf( "\t例2) トラック1と3をリッピングする場合：1,3\n" );
 	printf( "\t例3) トラック1から3をリッピングする場合：1-3\n" );
-	printf( "\t例4) トラック1から3とトラック5をリッピングする場合：1-3,5\n\n" );
+	printf( "\t例4) トラック2から6とトラック10をリッピングする場合：2-6,10\n" );
+	printf( "\t例5) 全トラックをリッピングする場合：all\n" );
 
-	printf( "\tリッピングするトラックを指定してください (上記のように複数指定可能です)：" );
+	printf( "\n\tリッピングするトラックを指定してください (上記のように複数指定可能です)：" );
 	std::string rippingTrackRangesRaw = Console_ReadLine( );
-	RangeValueTypeUVector  rippingTrackRangeValues = RangeSpecifyStringParseUnsigned( rippingTrackRangesRaw );
-
 	std::set<uint32_t>  specifyTracks;
 
-	for ( RangeValueTypeU v : rippingTrackRangeValues ) {
-		for ( uint32_t track_no = v.first; track_no <= v.second; track_no++ ) {
-			if ( track_no < rawToc.FirstTrackNumber ) continue;
-			if ( track_no > rawToc.LastTrackNumber ) break;
+	if ( lstrcmpiA( rippingTrackRangesRaw.c_str( ), "all" ) == 0 ) {
+		for ( uint8_t track_no = rawToc.FirstTrackNumber; track_no <= rawToc.LastTrackNumber; track_no++ ) {
 			specifyTracks.insert( track_no );
+		}
+	} else {
+		RangeValueTypeUVector  rippingTrackRangeValues = RangeSpecifyStringParseUnsigned( rippingTrackRangesRaw );
+		for ( RangeValueTypeU v : rippingTrackRangeValues ) {
+			for ( uint32_t track_no = v.first; track_no <= v.second; track_no++ ) {
+				if ( track_no < rawToc.FirstTrackNumber ) continue;
+				if ( track_no > rawToc.LastTrackNumber ) break;
+				specifyTracks.insert( track_no );
+			}
 		}
 	}
 
@@ -347,7 +388,7 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	printf( "\n【リッピングを行うトラック番号リスト】\n" );
 
-	uint32_t count = 0 , numberOfUnit=11;
+	uint32_t count = 0 , numberOfUnit=22;
 	bool afterNewline = false;
 	for ( auto it = specifyTracks.begin( ); it != specifyTracks.end( ); it++ ) {
 		count++;
@@ -387,23 +428,29 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	std::pair<uint32_t, std::wstring> ripping_target_track_file_item;
 	uint32_t RippingTrack = 0;
 
-	pDrive->spinUp( nullptr, false );
 	
-	DWORD stTotalStartMS, stTotalTimeSec;
-	stTotalStartMS = timeGetTime( );
 
 	wchar_t output_file_name[260];
 	SYSTEMTIME stf;
 
 
 	printf( "\n【リッピング状況】\n" );
+
+	printf( "\n\t[前処理]\n");
+	printf( "\n\t\tスピンアップしています..." );
+	pDrive->spinUp( nullptr, false );
+	printf( "完了\n\n" );
+
+
+	DWORD stTotalStartMS, stTotalTimeSec,stTotalTimeMS;
+	stTotalStartMS = timeGetTime( );
 	
 	count = 0;
 	for ( auto it = specifyTracks.begin( ); it != specifyTracks.end( ); it++ ) {
 		RippingTrack = *it;
 
 		count++;
-		printf( "\n\t[Track%02u] (%u/%zu)\n", RippingTrack  , count ,specifyTracks.size());
+		printf( "\n\t[Track %02u] (%u/%zu)\n", RippingTrack  , count ,specifyTracks.size());
 
 		if ( rawToc.trackItems[RippingTrack].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
 			printf( "\n\t\tリッピング不可能なトラックなためスキップします\n" );
@@ -469,22 +516,26 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	}
 
+	stTotalTimeMS = timeGetTime( ) - stTotalStartMS;
+	stTotalTimeSec = stTotalTimeMS / 1000;
 
-	stTotalTimeSec = ( timeGetTime( ) - stTotalStartMS ) / 1000;
 
-	pDrive->spinDown( nullptr, true );
+	printf( "\n\t[後処理]\n" );
+	printf( "\n\t\tスピンダウンしています..." );
+	pDrive->spinDown( nullptr, false );
+	printf( "完了\n\n" );
 
 	printf( "\n【リッピング結果】\n\n" );
 
 	printf( "\t[リッピングの総所要時間]\n" );
-	printf( "\t\t%02u:%02u\n\n", stTotalTimeSec / 60, stTotalTimeSec % 60 );
+	printf( "\t\t%02u分%02u秒%03u\n\n", stTotalTimeSec / 60, stTotalTimeSec % 60, stTotalTimeMS % 1000 );
 
 	printf( "\t[出力先フォルダ]\n" );
 	printf( "\t\t%S\n\n", currentDirectory.get( ) );
 
-	printf( "\t[トラックと出力先ファイル]\n" );
+	printf( "\t[トラックと出力先ファイル名一覧]\n" );
 	for ( auto& item : ripping_target_track_files ) {
-		printf( "\t\tTrack%02u：%S\n", item.first, item.second.c_str( ) );
+		printf( "\t\t[Track %02u]：%S\n", item.first, item.second.c_str( ) );
 	}
 }
 
@@ -541,9 +592,9 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 			processTimeSec = processTime / 1000;
 			rest_time_sec = rest_time_ms / 1000;
 
-			printf( "[残り時間=%02d:%02d][経過時間=%02d:%02d]",
-				rest_time_sec / 60, rest_time_sec % 60,
-				processTimeSec / 60, processTimeSec % 60
+			printf( "[残り推定時間=%02d分%02d秒%03d][経過時間=%02d分%02d秒%03d]",
+				rest_time_sec / 60, rest_time_sec % 60, rest_time_ms % 1000,
+				processTimeSec / 60, processTimeSec % 60, processTime % 1000
 			);
 
 		}

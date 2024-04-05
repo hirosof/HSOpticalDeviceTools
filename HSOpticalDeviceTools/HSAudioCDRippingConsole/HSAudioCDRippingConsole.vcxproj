@@ -159,6 +159,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CHSBase64.hpp" />
     <ClInclude Include="hash\HSHashBase.hpp" />
     <ClInclude Include="hash\HSHashCommonFunctions.hpp" />
     <ClInclude Include="hash\HSHashDefine.hpp" />

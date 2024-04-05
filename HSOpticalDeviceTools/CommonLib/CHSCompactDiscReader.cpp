@@ -822,6 +822,15 @@ std::string CHSCompactDiscReader::getTOCString( const char joinChar ) const {
 	if ( this->readRawTOC( &raw, EHSSCSI_AddressFormType::MergedMSF ) == false ) {
 		return std::string();
 	}
+
+	return this->GetTOCStringStatic( &raw, joinChar );
+
+}
+
+std::string CHSCompactDiscReader::GetTOCStringStatic( const THSSCSI_RawTOC* pToc, const char joinChar ) {
+	if(pToc == nullptr ) 	return std::string( );
+
+	THSSCSI_RawTOC raw = *pToc;
 	THSSCSI_RawTOCSessionItem sessionItem = raw.sessionItems[raw.FirstSessionNumber];
 
 	std::string s;
@@ -829,17 +838,40 @@ std::string CHSCompactDiscReader::getTOCString( const char joinChar ) const {
 
 	sprintf_s( buf, "%u", sessionItem.FirstTrackNumber );
 	s.append( buf );
-	
+
 	sprintf_s( buf, "%u", sessionItem.LastTrackNumber );
 	s.push_back( joinChar );
 	s.append( buf );
 
-	sprintf_s( buf, "%u", sessionItem.PointOfLeadOutAreaStart.u32Value );
+
+	switch ( raw.AddressType ) {
+		case EHSSCSI_AddressFormType::SplittedMSF:
+			sprintf_s( buf, "%u", MergeMSF( sessionItem.PointOfLeadOutAreaStart ).u32Value);
+			break;
+		case EHSSCSI_AddressFormType::MergedMSF:
+			sprintf_s( buf, "%u", sessionItem.PointOfLeadOutAreaStart.u32Value );
+			break;
+		case EHSSCSI_AddressFormType::LBA:
+			sprintf_s( buf, "%u", LBA_to_MergedMSF(sessionItem.PointOfLeadOutAreaStart ).u32Value);
+			break;
+	}
+
 	s.push_back( joinChar );
 	s.append( buf );
-	
+
 	for ( uint8_t i = sessionItem.FirstTrackNumber; i <= sessionItem.LastTrackNumber; i++ ) {
-		sprintf_s( buf, "%u", raw.trackItems[i].TrackStartAddress.u32Value );
+		switch ( raw.AddressType ) {
+			case EHSSCSI_AddressFormType::SplittedMSF:
+				sprintf_s( buf, "%u", MergeMSF( raw.trackItems[i].TrackStartAddress ).u32Value );
+				break;
+			case EHSSCSI_AddressFormType::MergedMSF:
+				sprintf_s( buf, "%u", raw.trackItems[i].TrackStartAddress.u32Value );
+				break;
+			case EHSSCSI_AddressFormType::LBA:
+				sprintf_s( buf, "%u", LBA_to_MergedMSF( raw.trackItems[i].TrackStartAddress ).u32Value );
+				break;
+		}
+
 		s.push_back( joinChar );
 		s.append( buf );
 	}
@@ -852,6 +884,15 @@ std::string CHSCompactDiscReader::getMusicBrainzDiscIDSource( void ) const {
 	if ( this->readRawTOC( &raw, EHSSCSI_AddressFormType::MergedMSF ) == false ) {
 		return std::string();
 	}
+	
+	return this->GetMusicBrainzDiscIDSourceStatic(&raw);
+}
+
+std::string CHSCompactDiscReader::GetMusicBrainzDiscIDSourceStatic( const THSSCSI_RawTOC* pToc ) {
+
+	if ( pToc == nullptr ) 	return std::string( );
+
+	THSSCSI_RawTOC raw = *pToc;
 	THSSCSI_RawTOCSessionItem sessionItem = raw.sessionItems[raw.FirstSessionNumber];
 
 	std::string s;
@@ -859,19 +900,41 @@ std::string CHSCompactDiscReader::getMusicBrainzDiscIDSource( void ) const {
 
 	sprintf_s( buf, "%02X", sessionItem.FirstTrackNumber );
 	s.append( buf );
-	
+
 	sprintf_s( buf, "%02X", sessionItem.LastTrackNumber );
 	s.append( buf );
 
-	sprintf_s( buf, "%08X", sessionItem.PointOfLeadOutAreaStart.u32Value );
-	s.append( buf );
-	
+	switch ( raw.AddressType ) {
+		case EHSSCSI_AddressFormType::SplittedMSF:
+			sprintf_s( buf, "%08X", MergeMSF( sessionItem.PointOfLeadOutAreaStart ).u32Value );
+			break;
+		case EHSSCSI_AddressFormType::MergedMSF:
+			sprintf_s( buf, "%08X", sessionItem.PointOfLeadOutAreaStart.u32Value );
+			break;
+		case EHSSCSI_AddressFormType::LBA:
+			sprintf_s( buf, "%08X", LBA_to_MergedMSF( sessionItem.PointOfLeadOutAreaStart ).u32Value );
+			break;
+	}
 
-	for (uint8_t  i = 1; i <=99; i++ ) {
+	s.append( buf );
+
+
+	for ( uint8_t i = 1; i <= 99; i++ ) {
 
 		if ( ( i >= sessionItem.FirstTrackNumber ) && ( i <= sessionItem.LastTrackNumber ) ) {
 
-			sprintf_s( buf, "%08X", raw.trackItems[i].TrackStartAddress.u32Value );
+			switch ( raw.AddressType ) {
+				case EHSSCSI_AddressFormType::SplittedMSF:
+					sprintf_s( buf, "%08X", MergeMSF( raw.trackItems[i].TrackStartAddress ).u32Value );
+					break;
+				case EHSSCSI_AddressFormType::MergedMSF:
+					sprintf_s( buf, "%08X", raw.trackItems[i].TrackStartAddress.u32Value );
+					break;
+				case EHSSCSI_AddressFormType::LBA:
+					sprintf_s( buf, "%08X", LBA_to_MergedMSF( raw.trackItems[i].TrackStartAddress ).u32Value );
+					break;
+			}
+
 		} else {
 			sprintf_s( buf, "%08X", 0 );
 

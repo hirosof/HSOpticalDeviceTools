@@ -501,9 +501,8 @@ bool CHSOpticalDrive::getMechanismStatus( THSSCSI_MechanismStatus* pStatus, HSSC
     params.pSPTDStruct->CdbLength = 12;
     params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_MECHANISM_STATUS;
 
-    params.pSPTDStruct->Cdb[8] = ( static_cast<uint8_t>( sizeof( ms ) ) & 0xFF00 ) >> 8;
-    params.pSPTDStruct->Cdb[9] = static_cast<uint8_t>( sizeof( ms ) ) & 0xFF;
-
+    params.pSPTDStruct->Cdb[8] = ( sizeof( ms )  & 0xFF00 ) >> 8;
+    params.pSPTDStruct->Cdb[9] = sizeof( ms ) & 0x00FF;
 
     if ( this->executeCommand( &params ) == false ) {
         return false;
@@ -538,8 +537,8 @@ bool CHSOpticalDrive::getMediaEventStatus( THSSCSI_MediaEventStatus* pStatus, HS
     params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_GET_EVENT_STATUS_NOTIFICATION;
     params.pSPTDStruct->Cdb[1] = 1;
     params.pSPTDStruct->Cdb[4] = 0x10;
-    params.pSPTDStruct->Cdb[7] = ( static_cast<uint8_t>( sizeof( mes ) ) & 0xFF00 ) >> 8;
-    params.pSPTDStruct->Cdb[8] = static_cast<uint8_t>( sizeof( mes ) ) & 0xFF;
+    params.pSPTDStruct->Cdb[7] = ( sizeof( mes ) & 0xFF00 ) >> 8;
+    params.pSPTDStruct->Cdb[8] = sizeof( mes ) & 0x00FF;
 
     if ( this->executeCommand( &params ) == false ) {
         return false;

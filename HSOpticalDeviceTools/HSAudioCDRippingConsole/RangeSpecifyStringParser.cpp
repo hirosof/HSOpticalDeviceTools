@@ -24,12 +24,31 @@ RangeValueTypeUVector RangeSpecifyStringParseUnsigned( const std::string str ) {
 
     for ( const char c : base ) {
         switch ( c ) {
-            case '\0':
-                /* 終端のNULL文字はカンマが入力された時と同じ処理を行う */
-                /* NULL文字限定の処理はないためこのままfallthroughとする */
+            // 次の文字は『,』と同じ意味にするためfallthroughとする
+            // ・NULL文字 (\0)
+            // ・ドット (.) ： 入力ミス対策
+            // ・バーティカルバー(|)
+            // ・プラス(+)
+            case '.':
 #if __cplusplus >= 201703L 
                 [[fallthrough]];
 #endif
+
+            case '+':
+#if __cplusplus >= 201703L 
+                [[fallthrough]];
+#endif
+
+            case '|':
+#if __cplusplus >= 201703L 
+                [[fallthrough]];
+#endif
+
+            case '\0':
+#if __cplusplus >= 201703L 
+                [[fallthrough]];
+#endif
+
             case ',':
                 if ( isCurrentRangeSpecify ) {
                     if ( !currentStr.empty( ) ) {

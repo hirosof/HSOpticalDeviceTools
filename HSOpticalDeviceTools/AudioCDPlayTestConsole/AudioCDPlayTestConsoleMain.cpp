@@ -870,7 +870,7 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			GetCommaSplitNumberString(length_samples).GetString( )
 		);
 
-		str.AppendFormat( L"LBA単位 = %s / %s\n",
+		str.AppendFormat( L"セクタ単位 = %s / %s\n",
 			GetCommaSplitNumberString( pos_sectors ).GetString( ),
 			GetCommaSplitNumberString( length_sectors ).GetString( )
 		);
@@ -903,7 +903,7 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		);
 
 
-		str.AppendFormat( L"LBA単位 = %s / %s\n",
+		str.AppendFormat( L"セクタ単位 = %s / %s\n",
 			GetCommaSplitNumberString(pos_sectors_overall).GetString(),
 			GetCommaSplitNumberString(length_sectors_overall).GetString()
 		);

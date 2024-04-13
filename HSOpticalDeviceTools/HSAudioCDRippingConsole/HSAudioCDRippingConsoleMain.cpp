@@ -482,6 +482,13 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 				wave.WriteListMemberChunkString( HSRIFF_FOURCC_LIST_INFO_IART,
 					cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].PerformerName.c_str( ),
 					true );
+
+				printf( "\n\t\tCD-TEXT：\n" );
+				printf( "\t\t\tアルバム名：%s\n", cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ) );
+				printf( "\t\t\t曲名：%s\n", cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].Name.c_str( ) );
+				printf( "\t\t\tアーティスト名：%s\n", cdtext.parsedItems[cdtextBlockID].trackTitles[RippingTrack].PerformerName.c_str( ) );
+
+				printf( "\n" );
 			}
 
 			char TrackNumberText[3];

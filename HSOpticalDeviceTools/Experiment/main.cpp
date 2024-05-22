@@ -100,7 +100,7 @@ int main( void ) {
 					printf( "[挿入されているメディアの種類] \n\t0x%04X : %s\n\n", cp, cmd.GetProfileNameString( cp ).c_str( ) );
 				}
 
-				printf( "[挿入されているメディアの大まかな種類] \n\t%s\n", cmd.getCurrentProfileRoughTypeString( ).c_str( ) );
+				printf( "[挿入されているメディアのファミリー名] \n\t%s\n", cmd.getCurrentProfileFamilyNameString( ).c_str( ) );
 
 				printf( "\n" );
 			}

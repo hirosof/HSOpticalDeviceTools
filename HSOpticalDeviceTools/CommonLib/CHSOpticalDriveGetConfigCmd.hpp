@@ -72,7 +72,7 @@ enum struct  EHSSCSI_ProfileName {
 	BD_RE,	//BD-RE
 };
 
-enum struct EHSSCSI_ProfileRoughType {
+enum struct EHSSCSI_ProfileFamilyName {
 	Unknown = 0,
 	CD,
 	DVD,
@@ -151,11 +151,11 @@ public:
 	static std::string GetProfileNameString( EHSSCSI_ProfileName profileName , bool groupOfSameType = true );
 
 	EHSSCSI_ProfileName getCurrentProfileName( void ) const;
-	EHSSCSI_ProfileRoughType getCurrentProfileRoughType(void) const;
+	EHSSCSI_ProfileFamilyName getCurrentProfileFamilyName(void) const;
 
-	std::string getCurrentProfileRoughTypeString( void ) const;
+	std::string getCurrentProfileFamilyNameString( void ) const;
 
-	static std::string GetProfileRoughTypeString( EHSSCSI_ProfileRoughType profileFamily );
+	static std::string GetProfileFamilyNameString( EHSSCSI_ProfileFamilyName profileFamily );
 
 
 	template <typename T> bool getGeneralFeatureDescriptor( T* pDesc , uint16_t targetFeatureNumber )const {

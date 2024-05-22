@@ -357,7 +357,7 @@ EHSSCSI_ProfileName CHSOpticalDriveGetConfigCmd::getCurrentProfileName( void ) c
     return EHSSCSI_ProfileName::Unknown;
 }
 
-EHSSCSI_ProfileRoughType CHSOpticalDriveGetConfigCmd::getCurrentProfileRoughType( void ) const {
+EHSSCSI_ProfileFamilyName CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyName( void ) const {
 
     EHSSCSI_ProfileName pn = this->getCurrentProfileName( );
 
@@ -365,7 +365,7 @@ EHSSCSI_ProfileRoughType CHSOpticalDriveGetConfigCmd::getCurrentProfileRoughType
         case EHSSCSI_ProfileName::CD_ROM:
         case EHSSCSI_ProfileName::CD_R:
         case EHSSCSI_ProfileName::CD_RW:
-            return EHSSCSI_ProfileRoughType::CD;
+            return EHSSCSI_ProfileFamilyName::CD;
 
         case EHSSCSI_ProfileName::DVD_ROM:
         case EHSSCSI_ProfileName::DVD_R:
@@ -377,30 +377,30 @@ EHSSCSI_ProfileRoughType CHSOpticalDriveGetConfigCmd::getCurrentProfileRoughType
         case EHSSCSI_ProfileName::DVD_Plus_R:
         case EHSSCSI_ProfileName::DVD_Plus_R_DL:
         case EHSSCSI_ProfileName::DVD_Plus_RW:
-            return EHSSCSI_ProfileRoughType::DVD;
+            return EHSSCSI_ProfileFamilyName::DVD;
 
         case EHSSCSI_ProfileName::BD_ROM:
         case EHSSCSI_ProfileName::BD_R_SRM:
         case EHSSCSI_ProfileName::BD_R_RRM:
         case EHSSCSI_ProfileName::BD_RE:
-            return EHSSCSI_ProfileRoughType::BD;
+            return EHSSCSI_ProfileFamilyName::BD;
     }
-    return EHSSCSI_ProfileRoughType::Unknown;
+    return EHSSCSI_ProfileFamilyName::Unknown;
 }
 
-std::string CHSOpticalDriveGetConfigCmd::getCurrentProfileRoughTypeString( void ) const {
-    return this->GetProfileRoughTypeString(this->getCurrentProfileRoughType());
+std::string CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyNameString( void ) const {
+    return this->GetProfileFamilyNameString(this->getCurrentProfileFamilyName());
 }
 
-std::string CHSOpticalDriveGetConfigCmd::GetProfileRoughTypeString( EHSSCSI_ProfileRoughType profileFamily ) {
+std::string CHSOpticalDriveGetConfigCmd::GetProfileFamilyNameString( EHSSCSI_ProfileFamilyName profileFamily ) {
 
     switch ( profileFamily ) {
 
-        case EHSSCSI_ProfileRoughType::CD:
+        case EHSSCSI_ProfileFamilyName::CD:
             return std::string( "CD" );
-        case EHSSCSI_ProfileRoughType::DVD:
+        case EHSSCSI_ProfileFamilyName::DVD:
             return std::string( "DVD" );
-        case EHSSCSI_ProfileRoughType::BD:
+        case EHSSCSI_ProfileFamilyName::BD:
             return std::string( "BD" );
     }
 

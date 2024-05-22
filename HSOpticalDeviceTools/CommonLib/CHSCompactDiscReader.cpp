@@ -163,7 +163,7 @@ EHSSCSI_TrackType CHSCompactDiscReader::GetTrackTypeFromControl( uint8_t control
 }
 
 bool CHSCompactDiscReader::isCDMediaPresent( void ) const {
-	return this->m_cmd.getCurrentProfileRoughType( ) == EHSSCSI_ProfileRoughType::CD;
+	return this->m_cmd.getCurrentProfileFamilyName( ) == EHSSCSI_ProfileFamilyName::CD;
 }
 
 bool CHSCompactDiscReader::isSupportedCDText( void ) const {

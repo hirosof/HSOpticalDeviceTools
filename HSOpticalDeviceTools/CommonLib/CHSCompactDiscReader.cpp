@@ -616,19 +616,32 @@ EHSSCSI_CDText_ReadResult CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Infor
 		THSSCSI_CDTEXT_ParsedNames& names = pInfo->parsedItems[pCurrent->BlockNumber];
 		names.isDoubleByteCharatorCode = pCurrent->isDoubleByteCharacterCode;
 
-#if 0
-		printf( "CD-TEXT Pack Data %zu\n", i );
-		printf( "\tIndicator1:%02X\n", pCurrent->PackIndicator1 );
-		printf( "\tIndicator2:%02X\n", pCurrent->PackIndicator2);
-		printf( "\tIndicator3:%02X\n", pCurrent->PackIndicator3 );
+#ifdef _DEBUG
+
+		printf( "[CD-TEXT Pack Data %zu]\n", i );
+		printf( "\tIndicator1:%02X (%d)\n", pCurrent->PackIndicator1, pCurrent->PackIndicator1 );
+		printf( "\tIndicator2:%02X (%d)\n", pCurrent->PackIndicator2, pCurrent->PackIndicator2 );
+		printf( "\tIndicator3:%02X (%d)\n", pCurrent->PackIndicator3, pCurrent->PackIndicator3 );
 		printf( "\tCharacterPosition:%u\n", pCurrent->CharacterPosition );
 		printf( "\tBlockNumber:%u\n", pCurrent->BlockNumber );
-		printf( "\tisDoubleByteCharatorCode:%u\n", pCurrent->isDoubleByteCharatorCode );
-		printf( "\tText Field Data : " );
+		printf( "\tisDoubleByteCharatorCode:%u\n", pCurrent->isDoubleByteCharacterCode );
+		printf( "\tText Field Data (Hex) : " );
 		for ( size_t z = 0; z < 12; z++ ) {
 			printf( "%02X ", pCurrent->TextDataField.single[z] );
 		}
-		printf( "\n" );
+
+		printf( "\n\tText Field Data (Spaced ASCII) : " );
+		for ( size_t z = 0; z < 12; z++ ) {
+			printf( "%c ", pCurrent->TextDataField.single[z] );
+		}
+
+		printf( "\n\tText Field Data (ASCII) : " );
+		for ( size_t z = 0; z < 12; z++ ) {
+			printf( "%c", pCurrent->TextDataField.single[z] );
+		}
+
+		printf( "\n\n" );
+		
 #endif
 
 		if ( ( pCurrent->PackIndicator1 >= 0x80 ) && ( pCurrent->PackIndicator1 <= 0x84 ) ) {

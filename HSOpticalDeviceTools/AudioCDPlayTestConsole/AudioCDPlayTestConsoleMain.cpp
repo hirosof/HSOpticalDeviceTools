@@ -1,4 +1,4 @@
-#include <cstdio>
+ï»¿#include <cstdio>
 #include <string>
 #include <iostream>
 #include <locale>
@@ -73,23 +73,23 @@ int main( void ) {
 
 		THSEnumrateOpticalDriveInfo optical_drives_enum;
 		if ( CHSOpticalDrive::EnumOpticalDrive( &optical_drives_enum ) == false ) {
-			printf( "ŒõŠwƒhƒ‰ƒCƒu‚Ì—ñ‹“‚É¸”s‚µ‚Ü‚µ‚½\n" );
+			printf( "å…‰å­¦ãƒ‰ãƒ©ã‚¤ãƒ–ã®åˆ—æŒ™ã«å¤±æ•—ã—ã¾ã—ãŸ\n" );
 			return 0;
 		}
 
 		if ( optical_drives_enum.uOpticalDriveCount == 0 ) {
-			printf( "ŒõŠwƒhƒ‰ƒCƒu‚ªÚ‘±‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB\n" );
+			printf( "å…‰å­¦ãƒ‰ãƒ©ã‚¤ãƒ–ãŒæ¥ç¶šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚\n" );
 			return 0;
 		}
 
 		std::string sep( 80, '-' );
 
-		printf( "yŒõŠwƒhƒ‰ƒCƒuƒŠƒXƒgz\n\n" );
-		printf( "”Ô†F[ƒhƒ‰ƒCƒu•¶š] ƒfƒoƒCƒX–¼\n" );
+		printf( "ã€å…‰å­¦ãƒ‰ãƒ©ã‚¤ãƒ–ãƒªã‚¹ãƒˆã€‘\n\n" );
+		printf( "ç•ªå·ï¼š[ãƒ‰ãƒ©ã‚¤ãƒ–æ–‡å­—] ãƒ‡ãƒã‚¤ã‚¹å\n" );
 		printf( "%s\n", sep.c_str( ) );
 		for ( uint8_t id = 0; id < optical_drives_enum.uOpticalDriveCount; id++ ) {
 
-			printf( "%4uF[%c:]", id, optical_drives_enum.Drives[id].Letter );
+			printf( "%4uï¼š[%c:]", id, optical_drives_enum.Drives[id].Letter );
 			if ( optical_drives_enum.Drives[id].bIncludedInfo ) {
 				printf( " %s", optical_drives_enum.Drives[id].Info.DeviceName );
 			}
@@ -101,11 +101,11 @@ int main( void ) {
 		uint32_t selectedOpticalDriveNumber = 0;
 
 		if ( optical_drives_enum.uOpticalDriveCount == 1 ) {
-			printf( "Ú‘±‚³‚ê‚Ä‚¢‚éŒõŠwƒhƒ‰ƒCƒu‚Í1‚Â‚Å‚µ‚½‚Ì‚ÅAŠY“–‚Ìƒhƒ‰ƒCƒu‚ª©“®‚Å‘I‘ğ‚³‚ê‚Ü‚µ‚½B\n" );
+			printf( "æ¥ç¶šã•ã‚Œã¦ã„ã‚‹å…‰å­¦ãƒ‰ãƒ©ã‚¤ãƒ–ã¯1ã¤ã§ã—ãŸã®ã§ã€è©²å½“ã®ãƒ‰ãƒ©ã‚¤ãƒ–ãŒè‡ªå‹•ã§é¸æŠã•ã‚Œã¾ã—ãŸã€‚\n" );
 			selectedOpticalDriveNumber = 0;
 		} else {
 
-			printf( "ã‚ÌƒŠƒXƒg‚©‚çg—p‚·‚éŒõŠwƒhƒ‰ƒCƒu‚ğ”Ô†‚Åw’è‚µ‚Ä‚­‚¾‚³‚¢F" );
+			printf( "ä¸Šã®ãƒªã‚¹ãƒˆã‹ã‚‰ä½¿ç”¨ã™ã‚‹å…‰å­¦ãƒ‰ãƒ©ã‚¤ãƒ–ã‚’ç•ªå·ã§æŒ‡å®šã—ã¦ãã ã•ã„ï¼š" );
 
 			while ( true ) {
 				(void) scanf_s( "%u", &selectedOpticalDriveNumber );
@@ -115,7 +115,7 @@ int main( void ) {
 					break;
 				}
 
-				printf( "–³Œø‚È”Ô†‚ª“ü—Í‚³‚ê‚Ü‚µ‚½Bw’è‚ğ‚â‚è’¼‚µ‚Ä‚­‚¾‚³‚¢F" );
+				printf( "ç„¡åŠ¹ãªç•ªå·ãŒå…¥åŠ›ã•ã‚Œã¾ã—ãŸã€‚æŒ‡å®šã‚’ã‚„ã‚Šç›´ã—ã¦ãã ã•ã„ï¼š" );
 			}
 
 
@@ -145,15 +145,15 @@ RequestAgainFlag DriveProcessEntry( char driveletter ) {
 
 	std::string sep( 80, '=' );
 
-	printf( "yƒhƒ‰ƒCƒu‚Ìó‘Ôƒ`ƒFƒbƒNz\n" );
+	printf( "ã€ãƒ‰ãƒ©ã‚¤ãƒ–ã®çŠ¶æ…‹ãƒã‚§ãƒƒã‚¯ã€‘\n" );
 
 	if ( drive.open( driveletter ) == false ) {
-		printf( "ƒhƒ‰ƒCƒu‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½B\n" );
+		printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã‚’é–‹ã‘ã¾ã›ã‚“ã§ã—ãŸã€‚\n" );
 		return RequestAgainFlag::None;
 	}
 
 	if ( drive.isTrayOpened( ) ) {
-		printf( "ƒhƒ‰ƒCƒu‚ÌƒgƒŒƒC‚ªŠJ‚©‚ê‚Ä‚¢‚Ü‚·B\n" );
+		printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã®ãƒˆãƒ¬ã‚¤ãŒé–‹ã‹ã‚Œã¦ã„ã¾ã™ã€‚\n" );
 		return RequestAgainFlag::None;
 	}
 
@@ -161,18 +161,18 @@ RequestAgainFlag DriveProcessEntry( char driveletter ) {
 
 	switch ( readyState ) {
 		case EHSSCSI_ReadyStatus::Ready:
-			printf( "ƒhƒ‰ƒCƒu‚ÉƒAƒNƒZƒX‚·‚é€”õ‚ª‚Å‚«‚Ä‚¢‚Ü‚·B\n" );
+			printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã«ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹æº–å‚™ãŒã§ãã¦ã„ã¾ã™ã€‚\n" );
 			break;
 		case EHSSCSI_ReadyStatus::NotReady:
-			printf( "ƒhƒ‰ƒCƒu‚ÉƒAƒNƒZƒX‚·‚é€”õ‚ª‚Å‚«‚Ä‚¢‚Ü‚¹‚ñB\n" );
+			printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã«ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹æº–å‚™ãŒã§ãã¦ã„ã¾ã›ã‚“ã€‚\n" );
 
 			break;
 		case EHSSCSI_ReadyStatus::FailedGotStatus:
-			printf( "ƒhƒ‰ƒCƒu‚Ìó‘Ôæ“¾‚É¸”s‚µ‚Ü‚µ‚½B\n" );
+			printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã®çŠ¶æ…‹å–å¾—ã«å¤±æ•—ã—ã¾ã—ãŸã€‚\n" );
 
 			break;
 		case EHSSCSI_ReadyStatus::MediumNotPresent:
-			printf( "ƒhƒ‰ƒCƒu‚ÉƒƒfƒBƒA‚ª‘}“ü‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB\n" );
+			printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã«ãƒ¡ãƒ‡ã‚£ã‚¢ãŒæŒ¿å…¥ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚\n" );
 			break;
 	}
 
@@ -181,15 +181,15 @@ RequestAgainFlag DriveProcessEntry( char driveletter ) {
 	}
 
 
-	printf( "\nyƒfƒBƒXƒN‚Ìó‘Ôƒ`ƒFƒbƒNz\n" );
+	printf( "\nã€ãƒ‡ã‚£ã‚¹ã‚¯ã®çŠ¶æ…‹ãƒã‚§ãƒƒã‚¯ã€‘\n" );
 	CHSOpticalDriveGetConfigCmd cmd( &drive );
 	EHSSCSI_ProfileName pn = cmd.getCurrentProfileName( );
-	printf( "ƒZƒbƒg‚³‚ê‚Ä‚¢‚éƒƒfƒBƒA‚Ìí—ŞF%s\n", cmd.GetProfileNameString( pn ).c_str( ) );
+	printf( "ã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚‹ãƒ¡ãƒ‡ã‚£ã‚¢ã®ç¨®é¡ï¼š%s\n", cmd.GetProfileNameString( pn ).c_str( ) );
 
 
 	CHSCompactDiscReader cdreader( &drive );
 	if ( cdreader.isCDMediaPresent( ) == false ) {
-		printf( "ƒhƒ‰ƒCƒu‚ÉƒZƒbƒg‚³‚ê‚Ä‚¢‚éƒƒfƒBƒA‚ÍCDŒnƒƒfƒBƒA‚Å‚Í‚ ‚è‚Ü‚¹‚ñB\n" );
+		printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã«ã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚‹ãƒ¡ãƒ‡ã‚£ã‚¢ã¯CDç³»ãƒ¡ãƒ‡ã‚£ã‚¢ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚\n" );
 		return RequestAgainFlag::None;
 	}
 
@@ -197,14 +197,14 @@ RequestAgainFlag DriveProcessEntry( char driveletter ) {
 	THSSCSI_InterpretedDiscInformation idi;
 	if ( cdreader.readDiscInformation( &di, &idi ) ) {
 		if ( di.DiscStatus == 0 ) {
-			printf( "ƒhƒ‰ƒCƒu‚ÉƒZƒbƒg‚³‚ê‚Ä‚¢‚é%s‚Íƒuƒ‰ƒ“ƒNƒƒfƒBƒA‚Å‚·B\n",
+			printf( "ãƒ‰ãƒ©ã‚¤ãƒ–ã«ã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚‹%sã¯ãƒ–ãƒ©ãƒ³ã‚¯ãƒ¡ãƒ‡ã‚£ã‚¢ã§ã™ã€‚\n",
 				cmd.GetProfileNameString( pn ).c_str( ) );
 
 			return RequestAgainFlag::None;
 		}
 	}
 
-	printf( "–â‘è‚È‚µATOCî•ñ‚ÌŠm”F‚Æ‘I‘ğ‚ÉˆÚs‚µ‚Ü‚·B\n\n" );
+	printf( "å•é¡Œãªã—ã€TOCæƒ…å ±ã®ç¢ºèªã¨é¸æŠã«ç§»è¡Œã—ã¾ã™ã€‚\n\n" );
 
 	return DiscProcess( &drive );
 }
@@ -213,11 +213,11 @@ RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	if ( pDrive == nullptr ) 		return RequestAgainFlag::None;
 
-	printf( "yTOCî•ñz\n" );
+	printf( "ã€TOCæƒ…å ±ã€‘\n" );
 	CHSCompactDiscReader cdreader( pDrive );
 	THSSCSI_RawTOC rawToc;
 	if ( cdreader.readRawTOC( &rawToc, EHSSCSI_AddressFormType::LBA ) == false ) {
-		printf( "TOCî•ñ‚Ì“Ç‚İæ‚è‚É¸”s‚µ‚Ü‚µ‚½\n" );
+		printf( "TOCæƒ…å ±ã®èª­ã¿å–ã‚Šã«å¤±æ•—ã—ã¾ã—ãŸ\n" );
 		return RequestAgainFlag::None;
 	}
 
@@ -231,44 +231,44 @@ RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive ) {
 	}
 
 	if ( !has_audio2channel_track ) {
-		printf( "Ä¶‚É‘Î‰‚µ‚Ä‚¢‚éŒ`®‚Ìƒgƒ‰ƒbƒN‚ª‚ ‚è‚Ü‚¹‚ñ\n" );
+		printf( "å†ç”Ÿã«å¯¾å¿œã—ã¦ã„ã‚‹å½¢å¼ã®ãƒˆãƒ©ãƒƒã‚¯ãŒã‚ã‚Šã¾ã›ã‚“\n" );
 		return RequestAgainFlag::None;
 	} else {
-		printf( "Ä¶‚É‘Î‰‚µ‚Ä‚¢‚éŒ`®‚Ìƒgƒ‰ƒbƒN‚ª‚ ‚è‚Ü‚µ‚½Aˆ—‚ğ‘±s‚µ‚Ü‚·B\n" );
+		printf( "å†ç”Ÿã«å¯¾å¿œã—ã¦ã„ã‚‹å½¢å¼ã®ãƒˆãƒ©ãƒƒã‚¯ãŒã‚ã‚Šã¾ã—ãŸã€å‡¦ç†ã‚’ç¶šè¡Œã—ã¾ã™ã€‚\n" );
 	}
 
 	THSSCSI_CDTEXT_Information cdtext;
-	printf( "\nyCD-TEXTî•ñæ“¾z\n" );
-	printf( "CD-TEXTî•ñ‚ğƒfƒoƒCƒX‚ÉÆ‰ï‚µ‚Ä‚¢‚Ü‚·..." );
+	printf( "\nã€CD-TEXTæƒ…å ±å–å¾—ã€‘\n" );
+	printf( "CD-TEXTæƒ…å ±ã‚’ãƒ‡ãƒã‚¤ã‚¹ã«ç…§ä¼šã—ã¦ã„ã¾ã™..." );
 	EHSSCSI_CDText_ReadResult cdtextReadResult = cdreader.readCDText( &cdtext );
-	printf( "Š®—¹\n" );
+	printf( "å®Œäº†\n" );
 
 	if ( cdtextReadResult == EHSSCSI_CDText_ReadResult::Success ) {
 		if ( cdtext.hasItems ) {
-			printf( "Æ‰ï‚ÌŒ‹‰ÊF¬Œ÷‚µ‚Ü‚µ‚½B\n" );
+			printf( "ç…§ä¼šã®çµæœï¼šæˆåŠŸã—ã¾ã—ãŸã€‚\n" );
 		} else {
-			printf( "Æ‰ï‚ÌŒ‹‰ÊFCD-TEXTî•ñ‚ğ‚Á‚Ä‚¢‚Ü‚¹‚ñ‚Å‚µ‚½B\n" );
+			printf( "ç…§ä¼šã®çµæœï¼šCD-TEXTæƒ…å ±ã‚’æŒã£ã¦ã„ã¾ã›ã‚“ã§ã—ãŸã€‚\n" );
 		}
 	}else if(cdtextReadResult == EHSSCSI_CDText_ReadResult::TimeOut ){
 		cdtext.hasItems = false;
-		printf( "Æ‰ï‚ÌŒ‹‰ÊFƒ^ƒCƒ€ƒAƒEƒg‚µ‚Ü‚µ‚½B\n" );
+		printf( "ç…§ä¼šã®çµæœï¼šã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆã—ã¾ã—ãŸã€‚\n" );
 	} else {
 		cdtext.hasItems = false;
-		printf( "Æ‰ï‚ÌŒ‹‰ÊFƒ^ƒCƒ€ƒAƒEƒgˆÈŠO‚Ì—vˆö‚Å¸”s‚µ‚Ü‚µ‚½B\n" );
+		printf( "ç…§ä¼šã®çµæœï¼šã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆä»¥å¤–ã®è¦å› ã§å¤±æ•—ã—ã¾ã—ãŸã€‚\n" );
 	}
 
 	RequestAgainFlag againFlag;
 
 	do {
 
-		printf( "\nyÄ¶‰Â”\‚Èƒgƒ‰ƒbƒNƒŠƒXƒgz\n" );
+		printf( "\nã€å†ç”Ÿå¯èƒ½ãªãƒˆãƒ©ãƒƒã‚¯ãƒªã‚¹ãƒˆã€‘\n" );
 
 		std::string separator( 100, '-' );
 
 		printf( "%s\n", separator.c_str( ) );
 
-		printf( "[%7s][Track] : %10s ` %-10s (%8s)  ", "Session", "ŠJnˆÊ’u", "I—¹ˆÊ’u", "’·‚³" );
-		printf( "[%02s : %02s : %02s]\tMiB’PˆÊ‚ÌƒTƒCƒY\n", "•ª", "•b", "ƒtƒŒ[ƒ€" );
+		printf( "[%7s][Track] : %10s ï½ %-10s (%8s)  ", "Session", "é–‹å§‹ä½ç½®", "çµ‚äº†ä½ç½®", "é•·ã•" );
+		printf( "[%02s : %02s : %02s]\tMiBå˜ä½ã®ã‚µã‚¤ã‚º\n", "åˆ†", "ç§’", "ãƒ•ãƒ¬ãƒ¼ãƒ " );
 
 		printf( "%s\n", separator.c_str( ) );
 
@@ -279,7 +279,7 @@ RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive ) {
 
 			if ( rawToc.trackItems[track_no].TrackType != EHSSCSI_TrackType::Audio2Channel )continue;
 
-			printf( "[%7u][%5u] : %10u ` %-10u (%8u)  ",
+			printf( "[%7u][%5u] : %10u ï½ %-10u (%8u)  ",
 				rawToc.trackItems[track_no].SessionNumber,
 				track_no,
 				rawToc.trackItems[track_no].TrackStartAddress.u32Value,
@@ -317,11 +317,11 @@ RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive ) {
 				songNameMaxLen = max( songNameMaxLen, currentSongNameLen );
 			}
 
-			printf( "\nyCD-TEXTî•ño—Íz\n" );
-			printf( "\nƒAƒ‹ƒoƒ€–¼ : %s\n", cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ) );
-			printf( "ƒAƒ‹ƒoƒ€ƒA[ƒeƒBƒXƒg : %s\n", cdtext.parsedItems[cdtextBlockID].album.PerformerName.c_str( ) );
+			printf( "\nã€CD-TEXTæƒ…å ±å‡ºåŠ›ã€‘\n" );
+			printf( "\nã‚¢ãƒ«ãƒãƒ å : %s\n", cdtext.parsedItems[cdtextBlockID].album.Name.c_str( ) );
+			printf( "ã‚¢ãƒ«ãƒãƒ ã‚¢ãƒ¼ãƒ†ã‚£ã‚¹ãƒˆ : %s\n", cdtext.parsedItems[cdtextBlockID].album.PerformerName.c_str( ) );
 			printf( "\n%s\n", separator.c_str( ) );
-			printf( "[Track] %-*s\tƒA[ƒeƒBƒXƒg–¼\n", static_cast<int>( songNameMaxLen ), "‹È–¼" );
+			printf( "[Track] %-*s\tã‚¢ãƒ¼ãƒ†ã‚£ã‚¹ãƒˆå\n", static_cast<int>( songNameMaxLen ), "æ›²å" );
 
 			printf( "%s\n", separator.c_str( ) );
 
@@ -339,22 +339,22 @@ RequestAgainFlag DiscProcess( CHSOpticalDrive* pDrive ) {
 
 		UINT SelectedTrack = 0;
 
-		printf( "\nyÄ¶‚·‚éƒgƒ‰ƒbƒN‚Ì‘I‘ğz\n" );
-		printf( "Ä¶‚·‚éƒgƒ‰ƒbƒN”Ô†‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢F" );
+		printf( "\nã€å†ç”Ÿã™ã‚‹ãƒˆãƒ©ãƒƒã‚¯ã®é¸æŠã€‘\n" );
+		printf( "å†ç”Ÿã™ã‚‹ãƒˆãƒ©ãƒƒã‚¯ç•ªå·ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ï¼š" );
 		scanf_s( "%u", &SelectedTrack );
 		(void) Console_ReadLine( );
 
 		if ( ( SelectedTrack < rawToc.FirstTrackNumber ) || ( rawToc.LastTrackNumber < SelectedTrack ) ) {
-			printf( "\n•s³‚Èƒgƒ‰ƒbƒN”Ô†‚ªw’è‚³‚ê‚Ü‚µ‚½B\n" );
+			printf( "\nä¸æ­£ãªãƒˆãƒ©ãƒƒã‚¯ç•ªå·ãŒæŒ‡å®šã•ã‚Œã¾ã—ãŸã€‚\n" );
 			return RequestAgainFlag::None;
 		}
 
 		if ( rawToc.trackItems[SelectedTrack].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
-			printf( "\nÄ¶•s‰Â”\‚Èƒgƒ‰ƒbƒN”Ô†‚ªw’è‚³‚ê‚Ü‚µ‚½B\n" );
+			printf( "\nå†ç”Ÿä¸å¯èƒ½ãªãƒˆãƒ©ãƒƒã‚¯ç•ªå·ãŒæŒ‡å®šã•ã‚Œã¾ã—ãŸã€‚\n" );
 			return RequestAgainFlag::None;
 		}
 
-		printf( "\nyÄ¶ˆ—ŠJnz\n" );
+		printf( "\nã€å†ç”Ÿå‡¦ç†é–‹å§‹ã€‘\n" );
 
 		againFlag = CDPlayMain( pDrive, rawToc.trackItems[SelectedTrack], rawToc , cdtext );
 
@@ -393,15 +393,15 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 	wo.SetRepeatType( EHSWAVEOUT_LOOPTYPE::Normal );
 	
 	if ( wo.Setup(&engine , info ) ) {
-		printf( "CHSWAVEOUT::Setup()FOK\n" );
+		printf( "CHSWAVEOUT::Setup()ï¼šOK\n" );
 
 		if ( wo.Open( wfex ) ) {
-			printf( "CHSWAVEOUT::Open()FOK\n" );
+			printf( "CHSWAVEOUT::Open()ï¼šOK\n" );
 
 			wo.SetVolume( 50 );
 
 			if ( wo.Play( ) ) {
-				printf( "\nCHSWAVEOUT::Play()FOK\n\n" );
+				printf( "\nCHSWAVEOUT::Play()ï¼šOK\n\n" );
 
 				TProgressDialogData data;
 				data.bFirstShowFlag = true;
@@ -437,15 +437,15 @@ RequestAgainFlag CDPlayMain( CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem tr
 
 				switch ( data.dialogCloseReason ) {
 					case ProgressDialogCloseReason::DiscEjected:
-						printf( "\ny—áŠO”­¶z\n" );
-						printf( "Ä¶’†AƒƒfƒBƒA‚ªƒCƒWƒFƒNƒg‚³‚ê‚½‚½‚ßÄ¶‚ğ’†’f‚µ‚Ü‚µ‚½B" );
-						printf( "ƒhƒ‰ƒCƒu‘I‘ğ‰æ–Ê‚É–ß‚è‚Ü‚·B\n" );
+						printf( "\nã€ä¾‹å¤–ç™ºç”Ÿã€‘\n" );
+						printf( "å†ç”Ÿä¸­ã€ãƒ¡ãƒ‡ã‚£ã‚¢ãŒã‚¤ã‚¸ã‚§ã‚¯ãƒˆã•ã‚ŒãŸãŸã‚å†ç”Ÿã‚’ä¸­æ–­ã—ã¾ã—ãŸã€‚" );
+						printf( "ãƒ‰ãƒ©ã‚¤ãƒ–é¸æŠç”»é¢ã«æˆ»ã‚Šã¾ã™ã€‚\n" );
 						againFlag = RequestAgainFlag::DriveSelect;
 						break;
 					case ProgressDialogCloseReason::Unknown:
-						printf( "\ny—áŠO”­¶z\n" );
-						printf( "Ä¶’†Aƒhƒ‰ƒCƒu‚Ìó‘Ô‚É•s–¾‚È–â‘è‚ª”­¶‚µ‚½‚½‚ßÄ¶‚ğ’†’f‚µ‚Ü‚µ‚½B" );
-						printf( "ƒhƒ‰ƒCƒu‘I‘ğ‰æ–Ê‚É–ß‚è‚Ü‚·B\n" );
+						printf( "\nã€ä¾‹å¤–ç™ºç”Ÿã€‘\n" );
+						printf( "å†ç”Ÿä¸­ã€ãƒ‰ãƒ©ã‚¤ãƒ–ã®çŠ¶æ…‹ã«ä¸æ˜ãªå•é¡ŒãŒç™ºç”Ÿã—ãŸãŸã‚å†ç”Ÿã‚’ä¸­æ–­ã—ã¾ã—ãŸã€‚" );
+						printf( "ãƒ‰ãƒ©ã‚¤ãƒ–é¸æŠç”»é¢ã«æˆ»ã‚Šã¾ã™ã€‚\n" );
 						againFlag = RequestAgainFlag::DriveSelect;
 						break;
 				}
@@ -516,7 +516,7 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	CAtlStringW mainInstructionStr;
 
 
-	titileStr.Append( L"Ä¶ƒRƒ“ƒgƒ[ƒ‹ƒ_ƒCƒAƒƒO - " );
+	titileStr.Append( L"å†ç”Ÿã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ€ã‚¤ã‚¢ãƒ­ã‚° - " );
 	if ( pData->playInformation.pDrive->getCurrentDeviceInfo( &di ) ) {
 		titileStr.AppendFormat(L"[%C:] %S  / Track %02u",
 			pData->playInformation.pDrive->getCurrentDriveLetter(),
@@ -534,52 +534,52 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	tc.pszMainInstruction = mainInstructionStr.GetString();
 
 	tc.pszWindowTitle = titileStr.GetString( );
-	tc.pszContent = L"";	//ƒR[ƒ‹ƒoƒbƒNæ‚ÅXV
+	tc.pszContent = L"";	//ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯å…ˆã§æ›´æ–°
 
 	TASKDIALOG_BUTTON tb[] = {
-		{(int) HSTaskDialogCustomButton::SeekToTop,L"Å‰‚É–ß‚·"},
-		{(int) HSTaskDialogCustomButton::SeekToBack60Sec,L"-60•b"},
-		{(int) HSTaskDialogCustomButton::SeekToBack30Sec,L"-30•b"},
-		{(int) HSTaskDialogCustomButton::SeekToBack10Sec,L"-10•b"},
-		{(int) HSTaskDialogCustomButton::SeekToForward10Sec,L"+10•b"},
-		{(int) HSTaskDialogCustomButton::SeekToForward30Sec,L"+30•b"},
-		{(int) HSTaskDialogCustomButton::SeekToForward60Sec,L"+60•b"},
-		{(int) HSTaskDialogCustomButton::TimeShowTypeChange,L"ŠÔ•\¦Ø‘Ö"},
-		{(int) HSTaskDialogCustomButton::BackTrack,L"‘O‚Ìƒgƒ‰ƒbƒN"},
-		{(int) HSTaskDialogCustomButton::NextTrack,L"Ÿ‚Ìƒgƒ‰ƒbƒN"},
-		{(int) HSTaskDialogCustomButton::TrackSelect,L"ƒgƒ‰ƒbƒNw’è•ÏX"},
-		{(int) HSTaskDialogCustomButton::DriveChange,L"g—pƒhƒ‰ƒCƒu•ÏX"},
-		{(int) HSTaskDialogCustomButton::Volume,L"‰¹—Êİ’è"},
-		{(int) HSTaskDialogCustomButton::PlayEnd,L"Ä¶I—¹"}
+		{(int) HSTaskDialogCustomButton::SeekToTop,L"æœ€åˆã«æˆ»ã™"},
+		{(int) HSTaskDialogCustomButton::SeekToBack60Sec,L"-60ç§’"},
+		{(int) HSTaskDialogCustomButton::SeekToBack30Sec,L"-30ç§’"},
+		{(int) HSTaskDialogCustomButton::SeekToBack10Sec,L"-10ç§’"},
+		{(int) HSTaskDialogCustomButton::SeekToForward10Sec,L"+10ç§’"},
+		{(int) HSTaskDialogCustomButton::SeekToForward30Sec,L"+30ç§’"},
+		{(int) HSTaskDialogCustomButton::SeekToForward60Sec,L"+60ç§’"},
+		{(int) HSTaskDialogCustomButton::TimeShowTypeChange,L"æ™‚é–“è¡¨ç¤ºåˆ‡æ›¿"},
+		{(int) HSTaskDialogCustomButton::BackTrack,L"å‰ã®ãƒˆãƒ©ãƒƒã‚¯"},
+		{(int) HSTaskDialogCustomButton::NextTrack,L"æ¬¡ã®ãƒˆãƒ©ãƒƒã‚¯"},
+		{(int) HSTaskDialogCustomButton::TrackSelect,L"ãƒˆãƒ©ãƒƒã‚¯æŒ‡å®šå¤‰æ›´"},
+		{(int) HSTaskDialogCustomButton::DriveChange,L"ä½¿ç”¨ãƒ‰ãƒ©ã‚¤ãƒ–å¤‰æ›´"},
+		{(int) HSTaskDialogCustomButton::Volume,L"éŸ³é‡è¨­å®š"},
+		{(int) HSTaskDialogCustomButton::PlayEnd,L"å†ç”Ÿçµ‚äº†"}
 	};
 
 	tc.cButtons = sizeof( tb ) / sizeof( TASKDIALOG_BUTTON );
 	tc.pButtons = tb;
 
-	tc.pszVerificationText = L"ˆê’â~";
+	tc.pszVerificationText = L"ä¸€æ™‚åœæ­¢";
 
 	CAtlStringW  cdTextInfoStr;
 
 	if ( pData->CDTextInfo.hasItems ) {
-		cdTextInfoStr.Append( L"yCD-TEXTî•ñz\n" );
-		cdTextInfoStr.AppendFormat( L"ƒAƒ‹ƒoƒ€–¼F%S\n",
+		cdTextInfoStr.Append( L"ã€CD-TEXTæƒ…å ±ã€‘\n" );
+		cdTextInfoStr.AppendFormat( L"ã‚¢ãƒ«ãƒãƒ åï¼š%S\n",
 			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.Name.c_str( )
 		);
 
-		cdTextInfoStr.AppendFormat( L"ƒAƒ‹ƒoƒ€ƒA[ƒeƒBƒXƒgF%S\n",
+		cdTextInfoStr.AppendFormat( L"ã‚¢ãƒ«ãƒãƒ ã‚¢ãƒ¼ãƒ†ã‚£ã‚¹ãƒˆï¼š%S\n",
 			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].album.PerformerName.c_str( )
 		);
 
-		cdTextInfoStr.AppendFormat( L"‹È–¼F%S\n",
+		cdTextInfoStr.AppendFormat( L"æ›²åï¼š%S\n",
 			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].Name.c_str( )
 		);
-		cdTextInfoStr.AppendFormat( L"ƒA[ƒeƒBƒXƒgF%S",
+		cdTextInfoStr.AppendFormat( L"ã‚¢ãƒ¼ãƒ†ã‚£ã‚¹ãƒˆï¼š%S",
 			pData->CDTextInfo.parsedItems[pData->useCDTextBlockID].trackTitles[pData->playInformation.track.TrackNumber].PerformerName.c_str( )
 		);
 
 
-		tc.pszExpandedControlText = L"CD-TEXTî•ñ";
-		tc.pszCollapsedControlText = L"CD-TEXTî•ñ";
+		tc.pszExpandedControlText = L"CD-TEXTæƒ…å ±";
+		tc.pszCollapsedControlText = L"CD-TEXTæƒ…å ±";
 		tc.pszExpandedInformation = cdTextInfoStr.GetString( );
 
 	} else {
@@ -596,10 +596,10 @@ CAtlStringW  SecondsToString( uint32_t seconds, ESecondsToStringFormat strFormat
 
 	switch ( strFormat ) {
 		case ESecondsToStringFormat::HHMMSS:
-			str.Format( L"%02dF%02dF%02d",	seconds / 3600, seconds % 3600 / 60, seconds % 60);
+			str.Format( L"%02dï¼š%02dï¼š%02d",	seconds / 3600, seconds % 3600 / 60, seconds % 60);
 			break;
 		case ESecondsToStringFormat::MMSS:
-			str.Format( L"%02dF%02d", seconds / 60, seconds % 60 );
+			str.Format( L"%02dï¼š%02d", seconds / 60, seconds % 60 );
 			break;
 		default:
 			break;
@@ -721,8 +721,8 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 					tc.dwFlags = TDF_USE_COMMAND_LINKS;
 					tc.dwCommonButtons = TDCBF_CANCEL_BUTTON;
 					tc.hwndParent = hwnd;
-					tc.pszMainInstruction = L"‰¹—Ê‚ğŸ‚©‚ç‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢";
-					tc.pszWindowTitle = L"‰¹—Êİ’èƒ_ƒCƒAƒƒO";
+					tc.pszMainInstruction = L"éŸ³é‡ã‚’æ¬¡ã‹ã‚‰é¸æŠã—ã¦ãã ã•ã„";
+					tc.pszWindowTitle = L"éŸ³é‡è¨­å®šãƒ€ã‚¤ã‚¢ãƒ­ã‚°";
 
 					TASKDIALOG_BUTTON tb[4];
 					tb[0].nButtonID = (int) HSTaskDialogVolumeCustomButton::_25Percents;
@@ -794,8 +794,8 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 
 						CAtlStringW  str;
 
-						str.AppendFormat( L"Œ»İ‚Ìƒgƒ‰ƒbƒN‚æ‚è%s‚ÉÄ¶‰Â”\‚Èƒgƒ‰ƒbƒN‚ª‚ ‚è‚Ü‚¹‚ñB",
-							( id == HSTaskDialogCustomButton::BackTrack ) ? L"‘O" : L"Œã"
+						str.AppendFormat( L"ç¾åœ¨ã®ãƒˆãƒ©ãƒƒã‚¯ã‚ˆã‚Š%sã«å†ç”Ÿå¯èƒ½ãªãƒˆãƒ©ãƒƒã‚¯ãŒã‚ã‚Šã¾ã›ã‚“ã€‚",
+							( id == HSTaskDialogCustomButton::BackTrack ) ? L"å‰" : L"å¾Œ"
 						);
 
 						MessageBoxW( hwnd, str.GetString( ), L"AudioCDPlayTestConsole", MB_OK );
@@ -856,26 +856,44 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 
 		size_t pos_sectors = pos_sample * pwo->GetFormat( ).nBlockAlign / CHSCompactDiscReader::NormalCDDATrackSectorSize;
 		size_t length_sectors = length_samples * pwo->GetFormat( ).nBlockAlign / CHSCompactDiscReader::NormalCDDATrackSectorSize;
-		double PlayPosPercent = pos_sample * 100.0 / length_samples;
+		double PlayPosRatio = static_cast<double>(pos_sample) / length_samples;
 
-		str.AppendFormat( L"yÄ¶ˆÊ’u (ƒgƒ‰ƒbƒN’PˆÊ)z\n" );
+		str.AppendFormat( L"ã€å†ç”Ÿä½ç½® (ãƒˆãƒ©ãƒƒã‚¯å˜ä½)ã€‘" );
+
+
 		
-		str.AppendFormat( L"ŠÔ’PˆÊ = %s / %s\n",
+		str.AppendFormat( L"\næ™‚é–“å˜ä½ = %s / %s\n",
 			SecondsToString( pos_time, pData->timeFormat ).GetString( ),
 			SecondsToString( length_time, pData->timeFormat ).GetString( )
 		);
 
-		str.AppendFormat( L"ƒTƒ“ƒvƒ‹’PˆÊ= %s / %s\n", 
+		str.AppendFormat( L"ã‚µãƒ³ãƒ—ãƒ«å˜ä½= %s / %s\n", 
 			GetCommaSplitNumberString(pos_sample).GetString(),
 			GetCommaSplitNumberString(length_samples).GetString( )
 		);
 
-		str.AppendFormat( L"ƒZƒNƒ^’PˆÊ = %s / %s\n",
+		str.AppendFormat( L"ã‚»ã‚¯ã‚¿å˜ä½ = %s / %s\n",
 			GetCommaSplitNumberString( pos_sectors ).GetString( ),
 			GetCommaSplitNumberString( length_sectors ).GetString( )
 		);
 
-		str.AppendFormat( L"ƒp[ƒZƒ“ƒg’PˆÊ = %.2f%%", PlayPosPercent);
+		str.AppendFormat( L"ãƒ‘ãƒ¼ã‚»ãƒ³ãƒˆå˜ä½ = %6.2f%%\n", PlayPosRatio * 100.0 );
+
+		const size_t text_progress_size = 50;
+		double text_progress_pos;
+
+		for ( size_t i = 0; i < text_progress_size; i++ ) {
+			text_progress_pos = PlayPosRatio * text_progress_size;
+			if ( i <= text_progress_pos  ) {
+				if ( ( text_progress_pos - i ) < 0.5 ) {
+					str.AppendFormat( L"â—" );
+				} else {
+					str.AppendFormat( L"â—" );
+				}
+			} else {
+				str.AppendFormat( L"â—‹" );
+			}
+		}
 
 		size_t pos_bytes_additional_offset = pos_sample * pwo->GetFormat( ).nBlockAlign % CHSCompactDiscReader::NormalCDDATrackSectorSize;
 		size_t pos_sectors_overall = pos_sectors + pData->playInformation.track.TrackStartAddress.u32Value;
@@ -888,33 +906,47 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 
 		uint32_t pos_time_overall =  static_cast<uint32_t>( pos_samples_overall / pwo->GetFormat( ).nSamplesPerSec);
 		uint32_t length_time_overall = static_cast<uint32_t>( length_samples_overall / pwo->GetFormat( ).nSamplesPerSec);
-		double PlayPosPercentOverall = pos_sectors_overall * 100.0 / length_sectors_overall;
+		double PlayPosPerOverall = static_cast<double>(pos_sectors_overall)  / length_sectors_overall;
 
-		str.AppendFormat( L"\n\nyÄ¶ˆÊ’u (ƒfƒBƒXƒN‘S‘Ì)z\n" );
+		str.AppendFormat( L"\n\nã€å†ç”Ÿä½ç½® (ãƒ‡ã‚£ã‚¹ã‚¯å…¨ä½“)ã€‘" );
 		
-		str.AppendFormat( L"ŠÔ’PˆÊ = %s / %s\n",
+		str.AppendFormat( L"\næ™‚é–“å˜ä½ = %s / %s\n",
 			SecondsToString( pos_time_overall, pData->timeFormat ).GetString( ),
 			SecondsToString( length_time_overall, pData->timeFormat ).GetString( )
 		);
 
-		str.AppendFormat( L"ƒTƒ“ƒvƒ‹’PˆÊ= %s / %s\n",
+		str.AppendFormat( L"ã‚µãƒ³ãƒ—ãƒ«å˜ä½= %s / %s\n",
 			GetCommaSplitNumberString( pos_samples_overall ).GetString( ),
 			GetCommaSplitNumberString( length_samples_overall ).GetString( )
 		);
 
 
-		str.AppendFormat( L"ƒZƒNƒ^’PˆÊ = %s / %s\n",
+		str.AppendFormat( L"ã‚»ã‚¯ã‚¿å˜ä½ = %s / %s\n",
 			GetCommaSplitNumberString(pos_sectors_overall).GetString(),
 			GetCommaSplitNumberString(length_sectors_overall).GetString()
 		);
 
-		str.AppendFormat( L"ƒp[ƒZƒ“ƒg’PˆÊ = %.2f%%", PlayPosPercentOverall );
+		str.AppendFormat( L"ãƒ‘ãƒ¼ã‚»ãƒ³ãƒˆå˜ä½ = %6.2f%%\n", PlayPosPerOverall*100.0 );
+
+		for ( size_t i = 0; i < text_progress_size; i++ ) {
+			text_progress_pos = PlayPosPerOverall * text_progress_size;
+			if ( i <= text_progress_pos ) {
+				if ( ( text_progress_pos - i ) < 0.5 ) {
+					str.AppendFormat( L"â—" );
+				} else {
+					str.AppendFormat( L"â—" );
+				}
+			} else {
+				str.AppendFormat( L"â—‹" );
+			}
+		}
+
 
 		str.Insert( 0, L"\n" );
 		str.Append( L"\n" );
 
 		SendMessageW( hwnd, TDM_SET_ELEMENT_TEXT, TDE_CONTENT, (LPARAM) str.GetString( ) );
-		SendMessageW( hwnd, TDM_SET_PROGRESS_BAR_POS, static_cast<WPARAM>( PlayPosPercent * 10 ), 0 );
+		SendMessageW( hwnd, TDM_SET_PROGRESS_BAR_POS, static_cast<WPARAM>( PlayPosRatio * 1000.0 ), 0 );
 
 	} else if ( uNotification == TDN_DESTROYED ) {
 

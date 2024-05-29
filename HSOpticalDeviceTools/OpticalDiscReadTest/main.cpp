@@ -100,7 +100,7 @@ void DriveUnitProcess( char driveLetter ) {
 
 	CHSCompactDiscReader reader( &drive );
 
-#if 0
+#if 1
 	THSSCSI_ReadCapacityResponse cap;
 	if ( reader.readCapacity( &cap ) ) {
 

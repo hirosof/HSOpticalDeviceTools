@@ -105,7 +105,7 @@ public:
 
 	CHSOpticalDiscReader( );
 	CHSOpticalDiscReader( CHSOpticalDrive* pDrive );
-	void SetDrive( CHSOpticalDrive* pDrive );
+	void setDrive( CHSOpticalDrive* pDrive );
 
 
 	bool  readCapacity( THSSCSI_ReadCapacityResponse* pres );

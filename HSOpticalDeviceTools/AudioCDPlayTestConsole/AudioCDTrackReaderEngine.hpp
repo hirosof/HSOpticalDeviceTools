@@ -27,7 +27,7 @@ public:
 		printf( "AudioCDTrackReaderEngine::OnChangeUserData" );
 		printf( "\n" );
 		u_data = UserData;
-		m_reader.SetDrive( u_data.pDrive );
+		m_reader.setDrive( u_data.pDrive );
 	}
 
 

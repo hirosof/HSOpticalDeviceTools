@@ -6,16 +6,16 @@ bool CHSOpticalDiscReader::executeRawCommand( THSSCSI_CommandData* pData ) const
 }
 
 CHSOpticalDiscReader::CHSOpticalDiscReader( ) {
-	this->SetDrive( nullptr );
+	this->setDrive( nullptr );
 }
 
 CHSOpticalDiscReader::CHSOpticalDiscReader( CHSOpticalDrive* pDrive ) {
-	this->SetDrive( pDrive );
+	this->setDrive( pDrive );
 }
 
-void CHSOpticalDiscReader::SetDrive( CHSOpticalDrive* pDrive ) {
+void CHSOpticalDiscReader::setDrive( CHSOpticalDrive* pDrive ) {
 	this->mp_Drive = pDrive;
-	this->m_cmd.SetDrive( pDrive );
+	this->m_cmd.setDrive( pDrive );
 }
 
 bool CHSOpticalDiscReader::readCapacity( THSSCSI_ReadCapacityResponse* pres ) {

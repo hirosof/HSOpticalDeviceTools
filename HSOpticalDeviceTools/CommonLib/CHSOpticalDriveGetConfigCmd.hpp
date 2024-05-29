@@ -133,7 +133,7 @@ private:
 public:
 	CHSOpticalDriveGetConfigCmd( );
 	CHSOpticalDriveGetConfigCmd( CHSOpticalDrive* pDrive );
-	void SetDrive( CHSOpticalDrive* pDrive );
+	void setDrive( CHSOpticalDrive* pDrive );
 
 	size_t  execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE type, uint16_t startFeatureNumber,
 		THSSCSI_FeatureInfo* pInfo, HSSCSI_SPTD_RESULT* pDetailResult = nullptr ) const;

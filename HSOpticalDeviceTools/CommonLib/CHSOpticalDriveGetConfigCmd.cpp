@@ -85,15 +85,15 @@ size_t CHSOpticalDriveGetConfigCmd::executeRawGetConfigCmd( EHSSCSI_GET_CONFIGUR
 
 
 CHSOpticalDriveGetConfigCmd::CHSOpticalDriveGetConfigCmd( ) {
-	this->SetDrive( nullptr );
+	this->setDrive( nullptr );
 
 }
 
 CHSOpticalDriveGetConfigCmd::CHSOpticalDriveGetConfigCmd( CHSOpticalDrive* pDrive ) {
-	this->SetDrive( pDrive );
+	this->setDrive( pDrive );
 }
 
-void CHSOpticalDriveGetConfigCmd::SetDrive( CHSOpticalDrive* pDrive ) {
+void CHSOpticalDriveGetConfigCmd::setDrive( CHSOpticalDrive* pDrive ) {
 	this->mpDrive = pDrive;
 }
 

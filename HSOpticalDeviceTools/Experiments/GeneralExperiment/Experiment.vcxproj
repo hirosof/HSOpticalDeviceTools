@@ -149,11 +149,6 @@
   <ItemGroup>
     <ClInclude Include="CHSOpticalDriveExperiment.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
-      <Project>{a6a69963-242f-4ba8-9378-3a4eb42fad80}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

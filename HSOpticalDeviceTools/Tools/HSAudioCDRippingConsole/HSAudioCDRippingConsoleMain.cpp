@@ -5,7 +5,7 @@
 #include <set>
 #include <atlbase.h>
 #include <atlstr.h>
-#include "../CommonLib/CHSCompactDiscReader.hpp"
+#include "../../Libraries/CommonLib/CHSCompactDiscReader.hpp"
 #include "wave/HSWAVE.hpp"
 #include "hash/HSSHA1.hpp"
 #include "hash/HSSHA2.hpp"

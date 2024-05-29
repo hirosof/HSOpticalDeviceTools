@@ -2,7 +2,7 @@
 #include <string>
 
 #include "CHSOpticalDriveExperiment.hpp"
-#include "../CommonLib/CHSOpticalDriveGetConfigCmd.hpp"
+#include "../../Libraries/CommonLib/CHSOpticalDriveGetConfigCmd.hpp"
 
 
 void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res , bool firstNewLine = true , std::string prefix="" );

@@ -170,11 +170,6 @@
     <ClCompile Include="wave\HSWaveOperation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
-      <Project>{a6a69963-242f-4ba8-9378-3a4eb42fad80}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="CHSBase64.hpp" />
     <ClInclude Include="hash\HSHashBase.hpp" />
     <ClInclude Include="hash\HSHashCommonFunctions.hpp" />
@@ -195,6 +190,11 @@
     <ClInclude Include="wave\HSWaveDefine.hpp" />
     <ClInclude Include="wave\HSWaveMath.hpp" />
     <ClInclude Include="wave\HSWaveOperation.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\CommonLib\CommonLib.vcxproj">
+      <Project>{a6a69963-242f-4ba8-9378-3a4eb42fad80}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -4,7 +4,7 @@
 #include <locale>
 #include <atlbase.h>
 #include <atlstr.h>
-#include "../CommonLib/CHSCompactDiscReader.hpp"
+#include "../../Libraries/CommonLib/CHSCompactDiscReader.hpp"
 
 std::string Console_ReadLine( );
 

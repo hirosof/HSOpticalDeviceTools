@@ -1,5 +1,5 @@
 #pragma once
-#include "../CommonLib/CHSCompactDiscReader.hpp"
+#include "../../Libraries/CommonLib/CHSCompactDiscReader.hpp"
 #include "CHSWAVEOUT.hpp"
 
 struct CDPlayInformation {

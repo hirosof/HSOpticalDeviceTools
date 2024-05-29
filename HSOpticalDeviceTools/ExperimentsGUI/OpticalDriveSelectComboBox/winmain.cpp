@@ -8,7 +8,7 @@
 #include <windows.h>
 #include <cstdio>
 #include <CommCtrl.h>
-#include "../CommonLib/CHSOpticalDrive.hpp"
+#include "../../Libraries/CommonLib/CHSOpticalDrive.hpp"
 /*------------------------------------------------------------*/
 /*-----------------マニフェスト登録----------------------------*/
 #pragma comment(linker,"\"/manifestdependency:type='win32' "	\

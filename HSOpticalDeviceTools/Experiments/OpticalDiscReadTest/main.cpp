@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <string>
-#include "../CommonLib/CHSCompactDiscReader.hpp"
+#include "../../Libraries/CommonLib/CHSCompactDiscReader.hpp"
 
 void DriveUnitProcess( char driveLetter );
 void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res, bool firstNewLine = true, std::string prefix = "" );

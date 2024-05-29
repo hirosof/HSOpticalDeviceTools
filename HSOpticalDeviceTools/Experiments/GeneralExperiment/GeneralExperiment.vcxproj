@@ -24,6 +24,7 @@
     <ProjectGuid>{e24ff7b3-5ec4-423c-b316-cdb2942c2a01}</ProjectGuid>
     <RootNamespace>Experiment</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>GeneralExperiment</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -148,6 +149,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CHSOpticalDriveExperiment.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\CommonLib\CommonLib.vcxproj">
+      <Project>{a6a69963-242f-4ba8-9378-3a4eb42fad80}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

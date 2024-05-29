@@ -162,14 +162,14 @@
     <ClCompile Include="AudioCDPlayTestConsoleMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
-      <Project>{a6a69963-242f-4ba8-9378-3a4eb42fad80}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="CHSMalloc.hpp" />
     <ClInclude Include="CHSWAVEOUT.hpp" />
     <ClInclude Include="AudioCDTrackReaderEngine.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\CommonLib\CommonLib.vcxproj">
+      <Project>{a6a69963-242f-4ba8-9378-3a4eb42fad80}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

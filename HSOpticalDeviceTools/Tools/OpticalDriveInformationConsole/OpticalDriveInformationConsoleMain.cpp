@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <string>
-#include "../CommonLib/CHSOpticalDiscReader.hpp"
+#include "../../Libraries/CommonLib/CHSOpticalDiscReader.hpp"
 
 void DriveUnitProcess( THSOpticalDriveInfo driveInfo );
 

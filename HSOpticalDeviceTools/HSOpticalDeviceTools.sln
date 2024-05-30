@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1_実験プログラム類", "1_実験プログラム類", "{21D209B5-1132-464E-A3F4-A859D8AA0AF5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experiments", "Experiments", "{21D209B5-1132-464E-A3F4-A859D8AA0AF5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3_ツール類", "3_ツール類", "{E33B7B84-979C-4A8B-9058-6B482B7F7010}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{E33B7B84-979C-4A8B-9058-6B482B7F7010}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_ライブラリ類", "0_ライブラリ類", "{1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2_GUI系の実験プログラム類", "2_GUI系の実験プログラム類", "{5E434C6A-D4DC-443D-AED8-BBB8512E32F4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExperimentsGUI", "ExperimentsGUI", "{5E434C6A-D4DC-443D-AED8-BBB8512E32F4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonLib", "Libraries\CommonLib\CommonLib.vcxproj", "{A6A69963-242F-4BA8-9378-3A4EB42FAD80}"
 EndProject

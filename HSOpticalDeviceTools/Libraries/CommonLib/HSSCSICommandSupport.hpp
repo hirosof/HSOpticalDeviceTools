@@ -63,3 +63,6 @@ template <typename T> uint64_t HSSCSI_InverseEndian64Pointer( T* pvalue ) {
 	if ( pvalue == nullptr ) return 0;
 	return HSSCSI_InverseEndian64( *reinterpret_cast<uint64_t*>( pvalue ) );
 }
+
+
+std::string HSSCSI_GetConnectInterfaceNameStringByName(const EHSSCSI_ConnectInterfaceName name );

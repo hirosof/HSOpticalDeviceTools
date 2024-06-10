@@ -121,6 +121,7 @@ size_t CHSOpticalDriveGetConfigCmd::execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE t
     THSSCSI_FeatureDescriptorInfo desc;
     while ( offset < desc_size ) {
         desc.pHeader = reinterpret_cast<THSSCSI_FeatureDescriptorHeader*>( pFirstDesc + offset );
+        desc.pHeader->FeatureCode = HSSCSI_InverseEndian16( desc.pHeader->FeatureCode );
         if ( desc.pHeader->AdditionalLength != 0 ) {
             desc.pAdditionalData = pFirstDesc + offset + sizeof( THSSCSI_FeatureDescriptorHeader );
         } else {
@@ -131,45 +132,6 @@ size_t CHSOpticalDriveGetConfigCmd::execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE t
     }
 
     return pInfo->Descriptors.size( );
-}
-
-bool CHSOpticalDriveGetConfigCmd::getCurrentProfileNumber( uint16_t* pCurrentProfile ) const{
-    if ( pCurrentProfile == nullptr ) return false;
-
-    THSSCSI_CommandData data;
-    if ( !HSSCSI_InitializeCommandData( &data ) )return false;
-
-    THSSCSI_FeatureHeader headerOnly;
-
-    memset( &headerOnly, 0, sizeof( THSSCSI_FeatureHeader ) );
-
-    data.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_IN;
-    data.pSPTDStruct->DataBuffer = &headerOnly;
-    data.pSPTDStruct->DataTransferLength = static_cast<ULONG>( sizeof( THSSCSI_FeatureHeader ) );
-    data.pSPTDStruct->CdbLength = 10;
-
-    data.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_GET_CONFIGURATION;
-    data.pSPTDStruct->Cdb[2] = 0;
-    data.pSPTDStruct->Cdb[3] = 0;
-    data.pSPTDStruct->Cdb[8] = static_cast<uint8_t>( sizeof( THSSCSI_FeatureHeader ) );
-    data.pSPTDStruct->Cdb[1] = 2;
-
-    if ( this->executeRawGeneralCommand( &data ) == false ) {
-        return false;
-    }
-
-    if ( data.result.DeviceIOControlResult == FALSE ) {
-        return false;
-    }
-    size_t size = ( headerOnly.DataLength[0] << 24 ) | ( headerOnly.DataLength[1] << 16 );
-    size |= ( headerOnly.DataLength[2] << 8 ) | headerOnly.DataLength[3];
-    size += 4;
-    if ( size >= 8 ) {
-        *pCurrentProfile = ( headerOnly.CurrentProfile[0] << 8 ) | ( headerOnly.CurrentProfile[1] );
-        return true;
-    }
-    
-    return false;
 }
 
 bool CHSOpticalDriveGetConfigCmd::getSupportProfileNumbers( HSSCSI_ProfilesNumberVector* pProfiles ) const {
@@ -185,8 +147,7 @@ bool CHSOpticalDriveGetConfigCmd::getSupportProfileNumbers( HSSCSI_ProfilesNumbe
         size_t  profDescNums;
         for ( auto desc : info.Descriptors ) {
 
-            if ( desc.pHeader->FeatureCode[0] != 0 )continue;
-            if ( desc.pHeader->FeatureCode[1] != 0 )continue;
+            if ( desc.pHeader->FeatureCode != 0 )continue;
 
             pProf = reinterpret_cast<THSSCSI_ProfileDescriptor*>( desc.pAdditionalData );
             profDescNums = desc.pHeader->AdditionalLength / sizeof( THSSCSI_ProfileDescriptor );
@@ -349,6 +310,60 @@ std::string CHSOpticalDriveGetConfigCmd::GetProfileNameString( EHSSCSI_ProfileNa
     return std::string( "Unknown" );
 }
 
+
+bool CHSOpticalDriveGetConfigCmd::getCurrentProfileNumber( uint16_t* pCurrentProfile ) const {
+    if ( pCurrentProfile == nullptr ) return false;
+
+    THSSCSI_CommandData data;
+    if ( !HSSCSI_InitializeCommandData( &data ) )return false;
+
+    THSSCSI_FeatureHeader headerOnly;
+
+    memset( &headerOnly, 0, sizeof( THSSCSI_FeatureHeader ) );
+
+    data.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_IN;
+    data.pSPTDStruct->DataBuffer = &headerOnly;
+    data.pSPTDStruct->DataTransferLength = static_cast<ULONG>( sizeof( THSSCSI_FeatureHeader ) );
+    data.pSPTDStruct->CdbLength = 10;
+
+    data.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_GET_CONFIGURATION;
+    data.pSPTDStruct->Cdb[2] = 0;
+    data.pSPTDStruct->Cdb[3] = 0;
+    data.pSPTDStruct->Cdb[8] = static_cast<uint8_t>( sizeof( THSSCSI_FeatureHeader ) );
+    data.pSPTDStruct->Cdb[1] = 2;
+
+    if ( this->executeRawGeneralCommand( &data ) == false ) {
+        return false;
+    }
+
+    if ( data.result.DeviceIOControlResult == FALSE ) {
+        return false;
+    }
+    size_t size = ( headerOnly.DataLength[0] << 24 ) | ( headerOnly.DataLength[1] << 16 );
+    size |= ( headerOnly.DataLength[2] << 8 ) | headerOnly.DataLength[3];
+    size += 4;
+    if ( size >= 8 ) {
+        *pCurrentProfile = ( headerOnly.CurrentProfile[0] << 8 ) | ( headerOnly.CurrentProfile[1] );
+        return true;
+    }
+
+    return false;
+}
+
+bool CHSOpticalDriveGetConfigCmd::getCurrentProfile( HSSCSI_ProfilesItem* pCurrentProfileItem ) const {
+
+    if ( pCurrentProfileItem == nullptr ) return false;
+
+    if ( this->getCurrentProfileNumber( &pCurrentProfileItem->first ) ) {
+        pCurrentProfileItem->second = GetProfileName( pCurrentProfileItem->first );
+        return true;
+    }
+
+    return false;
+}
+
+
+
 EHSSCSI_ProfileName CHSOpticalDriveGetConfigCmd::getCurrentProfileName( void ) const {
     uint16_t pn;
     if ( this->getCurrentProfileNumber( &pn ) ) {
@@ -358,10 +373,15 @@ EHSSCSI_ProfileName CHSOpticalDriveGetConfigCmd::getCurrentProfileName( void ) c
 }
 
 EHSSCSI_ProfileFamilyName CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyName( void ) const {
+    return this->GetProfileFamilyName( this->getCurrentProfileName( ) );
+}
 
-    EHSSCSI_ProfileName pn = this->getCurrentProfileName( );
+std::string CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyNameString( void ) const {
+    return this->GetProfileFamilyNameString(this->getCurrentProfileFamilyName());
+}
 
-    switch ( pn ) {
+EHSSCSI_ProfileFamilyName CHSOpticalDriveGetConfigCmd::GetProfileFamilyName( EHSSCSI_ProfileName profileName ) {
+    switch ( profileName ) {
         case EHSSCSI_ProfileName::CD_ROM:
         case EHSSCSI_ProfileName::CD_R:
         case EHSSCSI_ProfileName::CD_RW:
@@ -386,10 +406,7 @@ EHSSCSI_ProfileFamilyName CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyNa
             return EHSSCSI_ProfileFamilyName::BD;
     }
     return EHSSCSI_ProfileFamilyName::Unknown;
-}
 
-std::string CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyNameString( void ) const {
-    return this->GetProfileFamilyNameString(this->getCurrentProfileFamilyName());
 }
 
 std::string CHSOpticalDriveGetConfigCmd::GetProfileFamilyNameString( EHSSCSI_ProfileFamilyName profileFamily ) {
@@ -407,15 +424,19 @@ std::string CHSOpticalDriveGetConfigCmd::GetProfileFamilyNameString( EHSSCSI_Pro
     return std::string( "Unknown" );
 }
 
-bool CHSOpticalDriveGetConfigCmd::getCDReadFeatureDescriptor( THSSCSI_FeatureDescriptor_CDRead* pDesc ) const {
+std::string CHSOpticalDriveGetConfigCmd::GetProfileFamilyNameString( EHSSCSI_ProfileName profileName ) {
+    return GetProfileFamilyNameString( GetProfileFamilyName( profileName ) );
+}
+
+bool CHSOpticalDriveGetConfigCmd::getFeatureCDRead( THSSCSI_FeatureDescriptor_CDRead* pDesc ) const {
     return this->getGeneralFeatureDescriptor( pDesc, 0x1e );
 }
 
-bool CHSOpticalDriveGetConfigCmd::getRemovableMediumFeatureDescriptor( THSSCSI_FeatureDescriptor_RemovableMedium* pDesc ) const {
+bool CHSOpticalDriveGetConfigCmd::getFeatureRemovableMedium( THSSCSI_FeatureDescriptor_RemovableMedium* pDesc ) const {
     return this->getGeneralFeatureDescriptor( pDesc, 0x03 );
 }
 
-bool CHSOpticalDriveGetConfigCmd::getDriveSerialNumberFeatureDescriptor( THSSCSI_FeatureDescriptor_DriveSerialNumber* pDesc ) const {
+bool CHSOpticalDriveGetConfigCmd::getFeatureDriveSerialNumber( THSSCSI_FeatureDescriptor_DriveSerialNumber* pDesc ) const {
     if ( pDesc == nullptr ) return false;
     THSSCSI_FeatureInfo info;
     if ( this->execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE::Once, 0x108, &info ) == 0 )return false;
@@ -431,5 +452,41 @@ bool CHSOpticalDriveGetConfigCmd::getDriveSerialNumberFeatureDescriptor( THSSCSI
     }
 
     return true;
+}
+
+EHSSCSI_ConnectInterfaceName CHSOpticalDriveGetConfigCmd::getPhysicalInterfaceStandardName( void ) const {
+
+    THSSCSI_FeatureDescriptor_Core core;
+    if ( !this->getGeneralFeatureDescriptor( &core,0x001)  ) {
+        return EHSSCSI_ConnectInterfaceName::Unknown;
+    }
+
+
+    core.PhysicalInterfaceStandard = HSSCSI_InverseEndian32( core.PhysicalInterfaceStandard );
+
+    switch ( core.PhysicalInterfaceStandard ) {
+        case 0x001:
+            return EHSSCSI_ConnectInterfaceName::SCSI;
+        case 0x002:
+            return EHSSCSI_ConnectInterfaceName::ATAPI;
+        case 0x003:
+            return EHSSCSI_ConnectInterfaceName::IEEE1394_1995;
+        case 0x004:
+            return EHSSCSI_ConnectInterfaceName::IEEE1394A;
+        case 0x005:
+            return EHSSCSI_ConnectInterfaceName::Fibre_Channel;
+        case 0x006:
+            return EHSSCSI_ConnectInterfaceName::IEEE1394B;
+        case 0x007:
+            return EHSSCSI_ConnectInterfaceName::Serial_ATAPI;
+        case 0x008:
+            return EHSSCSI_ConnectInterfaceName::USB;
+        default:
+            return EHSSCSI_ConnectInterfaceName::Unknown;
+    }
+}
+
+std::string CHSOpticalDriveGetConfigCmd::getPhysicalInterfaceStandardNameString( void ) const {
+    return HSSCSI_GetConnectInterfaceNameStringByName(this->getPhysicalInterfaceStandardName());
 }
 

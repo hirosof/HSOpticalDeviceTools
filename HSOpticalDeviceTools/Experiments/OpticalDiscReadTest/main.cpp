@@ -27,7 +27,7 @@ int main( void ) {
 	for ( size_t i = 0; i < optical_drives_enum.uOpticalDriveCount; i++ ) {
 		printf( "%s\n", sep.c_str( ) );
 		printf( "[%c:]", optical_drives_enum.Drives[i].Letter );
-		if ( optical_drives_enum.Drives[i].bIncludedInfo ) printf( " %s", optical_drives_enum.Drives[i].Info.DeviceName );
+		if ( optical_drives_enum.Drives[i].bIncludedInfo ) printf( " %s", optical_drives_enum.Drives[i].Info.DisplayName );
 		printf( "\n%s\n", sep.c_str( ) );
 
 		DriveUnitProcess( optical_drives_enum.Drives[i].Letter );

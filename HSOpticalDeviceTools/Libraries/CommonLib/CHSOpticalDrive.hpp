@@ -25,7 +25,7 @@ struct THSOpticalDriveDeviceInfo {
 	char VendorID[DHSOpticalDriveVendorIDLength + 1];
 	char ProductID[DHSOpticalDriveProductIDLength + 1];
 	char ProductRevisionLevel[DHSOpticalDriveProductRevisionLevelLength + 1];
-	char DeviceName[DHSOpticalDriveDeviceNameLength + 1];
+	char DisplayName[DHSOpticalDriveDeviceNameLength + 1];
 };
 
 
@@ -175,7 +175,7 @@ public:
 
 	EHSOD_AlimentMaskType getAlimentMask(ULONG *pRawAlimentMask )const;
 	bool getMaxTransferLength(DWORD *pMaxTransferLength )const;
-
+	EHSSCSI_ConnectInterfaceName getBusType( STORAGE_BUS_TYPE *pRawBusType = nullptr)const;
 
 	bool getMechanismStatus( THSSCSI_MechanismStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult ) const;
 	bool getMediaEventStatus( THSSCSI_MediaEventStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult )const;

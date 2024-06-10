@@ -143,7 +143,17 @@ using HSSCSI_SPTD_ResponseRawDataType = uint8_t;
 using HSSCSI_SPTD_ResponseRawData = std::shared_ptr<HSSCSI_SPTD_ResponseRawDataType[]>;
 
 
-
+enum struct  EHSSCSI_ConnectInterfaceName {
+	Unknown = 0,	//•s–¾
+	SCSI,
+	ATAPI,
+	IEEE1394_1995,
+	IEEE1394A,
+	Fibre_Channel,
+	IEEE1394B,
+	Serial_ATAPI,
+	USB
+};
 
 /*
 	Command Descriptor Block - Operation Code

@@ -249,7 +249,7 @@ LRESULT CALLBACK MainWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp ) {
 				for ( uint32_t i = 0; i < drives.uOpticalDriveCount; i++ ) {
 
 
-					if( drives.Drives[i].bIncludedInfo) wsprintfA( desp, "[%c:\\] %s", drives.Drives[i].Letter, drives.Drives[i].Info.DeviceName );
+					if( drives.Drives[i].bIncludedInfo) wsprintfA( desp, "[%c:\\] %s", drives.Drives[i].Letter, drives.Drives[i].Info.DisplayName );
 					else wsprintfA( desp, "[%c:\\]",drives.Drives[i].Letter );
 
 					SendMessageA( hList, CB_ADDSTRING, NULL, (LPARAM) desp );

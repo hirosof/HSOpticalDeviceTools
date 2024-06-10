@@ -100,13 +100,13 @@ bool CHSOpticalDrive::GetDeviceInfoFromHandle( HANDLE hOpticalDrive, THSOpticalD
             memcpy( pInfo->ProductID, data.ProductId, DHSOpticalDriveProductIDLength );
             memcpy( pInfo->ProductRevisionLevel, data.ProductRevisionLevel, DHSOpticalDriveProductRevisionLevelLength);
 
-            pInfo->DeviceName[0] = '\0';
+            pInfo->DisplayName[0] = '\0';
 
-            lstrcatA( pInfo->DeviceName, pInfo->VendorID );
-            if ( pInfo->DeviceName[0] != '\0' ) lstrcatA( pInfo->DeviceName, space );
-            lstrcatA( pInfo->DeviceName, pInfo->ProductID );
-            if ( pInfo->DeviceName[0] != '\0' ) lstrcatA( pInfo->DeviceName, space );
-            lstrcatA( pInfo->DeviceName, pInfo->ProductRevisionLevel );
+            lstrcatA( pInfo->DisplayName, pInfo->VendorID );
+            if ( pInfo->DisplayName[0] != '\0' ) lstrcatA( pInfo->DisplayName, space );
+            lstrcatA( pInfo->DisplayName, pInfo->ProductID );
+            if ( pInfo->DisplayName[0] != '\0' ) lstrcatA( pInfo->DisplayName, space );
+            lstrcatA( pInfo->DisplayName, pInfo->ProductRevisionLevel );
 
 
             return true;
@@ -478,12 +478,62 @@ bool CHSOpticalDrive::getMaxTransferLength( DWORD* pMaxTransferLength ) const {
         &query, static_cast<DWORD>( sizeof( STORAGE_PROPERTY_QUERY ) ),
         &sad, static_cast<DWORD>( sizeof( STORAGE_ADAPTER_DESCRIPTOR ) ),
         &returnSize, nullptr );
+
+
     if ( bRet ) {
         *pMaxTransferLength = sad.MaximumTransferLength;
+       
         return true;
     }
 
     return false;
+}
+
+EHSSCSI_ConnectInterfaceName CHSOpticalDrive::getBusType( STORAGE_BUS_TYPE* pRawBusType ) const {
+
+    if ( this->isOpened( ) == false ) return EHSSCSI_ConnectInterfaceName::Unknown;
+
+    STORAGE_ADAPTER_DESCRIPTOR sad;
+    STORAGE_PROPERTY_QUERY query;
+
+    memset( &query, 0, sizeof( STORAGE_PROPERTY_QUERY ) );
+    memset( &sad, 0, sizeof( STORAGE_ADAPTER_DESCRIPTOR ) );
+
+    query.PropertyId = StorageAdapterProperty;
+    query.QueryType = PropertyStandardQuery;
+
+    DWORD returnSize;
+    BOOL bRet = DeviceIoControl( this->getHandle( ), IOCTL_STORAGE_QUERY_PROPERTY,
+        &query, static_cast<DWORD>( sizeof( STORAGE_PROPERTY_QUERY ) ),
+        &sad, static_cast<DWORD>( sizeof( STORAGE_ADAPTER_DESCRIPTOR ) ),
+        &returnSize, nullptr );
+
+
+    if ( bRet ) {
+
+        STORAGE_BUS_TYPE busType =  static_cast<STORAGE_BUS_TYPE >(sad.BusType);
+        if ( pRawBusType ) *pRawBusType = busType;
+
+        switch ( busType ) {
+            case BusTypeScsi:
+                return EHSSCSI_ConnectInterfaceName::SCSI;
+            case BusTypeAtapi:
+                return EHSSCSI_ConnectInterfaceName::ATAPI;
+            case BusType1394:
+                return EHSSCSI_ConnectInterfaceName::IEEE1394_1995;
+            case BusTypeFibre:
+                return EHSSCSI_ConnectInterfaceName::Fibre_Channel;
+            case BusTypeSata:
+                return EHSSCSI_ConnectInterfaceName::Serial_ATAPI;
+            case BusTypeUsb:
+                return EHSSCSI_ConnectInterfaceName::USB;
+            default:
+                return EHSSCSI_ConnectInterfaceName::Unknown;
+        }
+
+    }
+
+    return EHSSCSI_ConnectInterfaceName::Unknown;
 }
 
 bool CHSOpticalDrive::getMechanismStatus( THSSCSI_MechanismStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult ) const{

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <map>
 #include "CHSOpticalDrive.hpp"
-
 #pragma pack(push , 1)
 
 
@@ -19,7 +19,7 @@ struct THSSCSI_FeatureHeader {
 };
 
 struct THSSCSI_FeatureDescriptorHeader {
-	uint8_t FeatureCode[2];
+	uint16_t FeatureCode;
 	uint8_t Current : 1;
 	uint8_t Persistent : 1;
 	uint8_t Version : 4;
@@ -109,6 +109,77 @@ struct THSSCSI_FeatureDescriptor_DriveSerialNumber {
 };
 
 
+// Core Feature Descriptor (Feature Code = 0x0001)
+struct THSSCSI_FeatureDescriptor_Core {
+	THSSCSI_FeatureDescriptorHeader header;
+	uint32_t PhysicalInterfaceStandard;
+	bool DBE : 1;
+	bool INQ2 : 1;
+};
+
+
+
+
+const std::map<const uint16_t, const std::string>  HSSCSI_FeatureNameStrings {
+	{0x0000,"Profile List"},
+	{0x0001,"Core"},
+	{0x0002,"Morphing"},
+	{0x0003,"Removable Medium"},
+	{0x0004,"Write Protect"},
+	{0x0010,"Random Readable"},
+	{0x001D,"Multi-Read"},
+	{0x001E,"CD Read"},
+	{0x001F,"DVD Read"},
+	{0x0020,"Random Writable"},
+	{0x0021,"Incremental Streaming Writable"},
+	{0x0022,"Sector Erasable"},
+	{0x0023,"Formattable"},
+	{0x0024,"Hardware Defect Management"},
+	{0x0025,"Write Once"},
+	{0x0026,"Restricted Overwrite"},
+	{0x0027,"CD-RW CAV Write"},
+	{0x0028,"MRW"},
+	{0x0029,"Enhanced Defect Reporting"},
+	{0x002A,"DVD+RW"},
+	{0x002B,"DVD+R"},
+	{0x002C,"Rigid Restricted Overwrite"},
+	{0x002D,"CD Track at Once"},
+	{0x002E,"CD Mastering"},
+	{0x002F,"DVD-R/-RW Write"},
+	{0x0033,"Layer Jump Recording"},
+	{0x0034,"LJ Rigid Restricted Overwrite"},
+	{0x0035,"Stop Long Operation"},
+	{0x0037,"CD-RW Media Write Support"},
+	{0x0038,"BD-R POW"},
+	{0x003A,"DVD+RW Dual Layer"},
+	{0x003B,"DVD+R Dual Layer"},
+	{0x0040,"BD Read Feature"},
+	{0x0041,"BD Write Feature"},
+	{0x0042,"TSR"},
+	{0x0050,"HD DVD Read"},
+	{0x0051,"HD DVD Write"},
+	{0x0052,"HD DVD-RW Fragment Recording"},
+	{0x0080,"Hybrid Disc"},
+	{0x0100,"Power Management"},
+	{0x0101,"SMART"},
+	{0x0102,"Embedded Changer"},
+	{0x0103,"CD Audio External Play"},
+	{0x0104,"Microcode Upgrade"},
+	{0x0105,"Timeout"},
+	{0x0106,"DVD-CSS"},
+	{0x0107,"Real Time Streaming"},
+	{0x0108,"Drive Serial Number"},
+	{0x0109,"Media Serial Number"},
+	{0x010A,"Disc Control Blocks"},
+	{0x010B,"DVD CPRM"},
+	{0x010C,"Firmware Information"},
+	{0x010D,"AACS"},
+	{0x010E,"DVD CSS Managed Recording"},
+	{0x0110,"VCPS"},
+	{0x0113,"SecurDisc"},
+	{0x0142,"OSSC Feature"},
+};
+
 using HSSCSI_ProfilesItem = std::pair<uint16_t,EHSSCSI_ProfileName>;
 using HSSCSI_Profiles = std::vector<HSSCSI_ProfilesItem>;
 
@@ -138,7 +209,8 @@ public:
 	size_t  execute( EHSSCSI_GET_CONFIGURATION_RT_TYPE type, uint16_t startFeatureNumber,
 		THSSCSI_FeatureInfo* pInfo, HSSCSI_SPTD_RESULT* pDetailResult = nullptr ) const;
 
-	bool getCurrentProfileNumber( uint16_t* pCurrentProfile ) const;
+
+
 
 
 	bool getSupportProfileNumbers( HSSCSI_ProfilesNumberVector* pProfiles ) const;
@@ -150,12 +222,18 @@ public:
 	static std::string GetProfileNameString( uint16_t profileNumber , bool groupOfSameType = true);
 	static std::string GetProfileNameString( EHSSCSI_ProfileName profileName , bool groupOfSameType = true );
 
+
+	bool getCurrentProfileNumber( uint16_t* pCurrentProfile ) const;
+	bool getCurrentProfile( HSSCSI_ProfilesItem* pCurrentProfileItem ) const;
 	EHSSCSI_ProfileName getCurrentProfileName( void ) const;
 	EHSSCSI_ProfileFamilyName getCurrentProfileFamilyName(void) const;
-
 	std::string getCurrentProfileFamilyNameString( void ) const;
 
+
+
+	static EHSSCSI_ProfileFamilyName GetProfileFamilyName( EHSSCSI_ProfileName profileName );
 	static std::string GetProfileFamilyNameString( EHSSCSI_ProfileFamilyName profileFamily );
+	static std::string GetProfileFamilyNameString( EHSSCSI_ProfileName profileName );
 
 
 	template <typename T> bool getGeneralFeatureDescriptor( T* pDesc , uint16_t targetFeatureNumber )const {
@@ -167,9 +245,13 @@ public:
 		return true;
 	}
 
-	bool getCDReadFeatureDescriptor( THSSCSI_FeatureDescriptor_CDRead* pDesc )const;
-	bool getRemovableMediumFeatureDescriptor( THSSCSI_FeatureDescriptor_RemovableMedium* pDesc ) const;
-	bool getDriveSerialNumberFeatureDescriptor( THSSCSI_FeatureDescriptor_DriveSerialNumber* pDesc ) const;
+	bool getFeatureCDRead( THSSCSI_FeatureDescriptor_CDRead* pDesc )const;
+	bool getFeatureRemovableMedium( THSSCSI_FeatureDescriptor_RemovableMedium* pDesc ) const;
+	bool getFeatureDriveSerialNumber( THSSCSI_FeatureDescriptor_DriveSerialNumber* pDesc ) const;
+
+	EHSSCSI_ConnectInterfaceName getPhysicalInterfaceStandardName( void )const;
+	std::string getPhysicalInterfaceStandardNameString( void )const;
+
 
 };
 

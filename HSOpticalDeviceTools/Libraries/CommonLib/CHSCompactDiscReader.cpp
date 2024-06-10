@@ -170,7 +170,7 @@ bool CHSCompactDiscReader::isSupportedCDText( void ) const {
 
 	THSSCSI_FeatureDescriptor_CDRead cdread;
 
-	if ( this->m_cmd.getCDReadFeatureDescriptor( &cdread ) ) {
+	if ( this->m_cmd.getFeatureCDRead( &cdread ) ) {
 		return cdread.CDText;
 	}
 

@@ -85,13 +85,13 @@ int main( void ) {
 		std::string sep( 80, '-' );
 
 		printf( "【光学ドライブリスト】\n\n" );
-		printf( "番号：[ドライブ文字] デバイス名\n" );
+		printf( "番号：[ドライブ文字] デバイス表示名\n" );
 		printf( "%s\n", sep.c_str( ) );
 		for ( uint8_t id = 0; id < optical_drives_enum.uOpticalDriveCount; id++ ) {
 
 			printf( "%4u：[%c:]", id, optical_drives_enum.Drives[id].Letter );
 			if ( optical_drives_enum.Drives[id].bIncludedInfo ) {
-				printf( " %s", optical_drives_enum.Drives[id].Info.DeviceName );
+				printf( " %s", optical_drives_enum.Drives[id].Info.DisplayName );
 			}
 			printf( "\n" );
 		}
@@ -520,12 +520,12 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	if ( pData->playInformation.pDrive->getCurrentDeviceInfo( &di ) ) {
 		titileStr.AppendFormat(L"[%C:] %S  / Track %02u",
 			pData->playInformation.pDrive->getCurrentDriveLetter(),
-			di.DeviceName,
+			di.DisplayName,
 			pData->playInformation.track.TrackNumber );
 
 		mainInstructionStr.Format(L"Drive = [%C:] %S\n%s",
 			pData->playInformation.pDrive->getCurrentDriveLetter(),
-			di.DeviceName,trackStr );
+			di.DisplayName,trackStr );
 	} else {
 		titileStr.AppendFormat(L"Track %02u", pData->playInformation.track.TrackNumber );
 		mainInstructionStr.SetString( trackStr );

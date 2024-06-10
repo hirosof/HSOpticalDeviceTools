@@ -30,7 +30,7 @@ int main( void ) {
 
 		printf( "%s\n", sep.c_str( ) );
 		printf( "[%c:]", optical_drives_enum.Drives[i].Letter );
-		if ( optical_drives_enum.Drives[i].bIncludedInfo ) printf( " %s", optical_drives_enum.Drives[i].Info.DeviceName );
+		if ( optical_drives_enum.Drives[i].bIncludedInfo ) printf( " %s", optical_drives_enum.Drives[i].Info.DisplayName );
 		printf( "\n%s\n", sep.c_str( ) );
 
 		if ( driveExp.open( optical_drives_enum.Drives[i].Letter ) ) {
@@ -142,9 +142,8 @@ int main( void ) {
 
 				for ( size_t i = 0; i < fi.Descriptors.size( ); i++ ) {
 
-					printf( "0x%02X%02X",
-						fi.Descriptors[i].pHeader->FeatureCode[0],
-						fi.Descriptors[i].pHeader->FeatureCode[1] );
+					printf( "0x%04X",
+						fi.Descriptors[i].pHeader->FeatureCode );
 
 					printf( " (%s)", ( fi.Descriptors[i].pHeader->Current ) ? "E" : "D" );
 
@@ -157,7 +156,7 @@ int main( void ) {
 
 
 			THSSCSI_FeatureDescriptor_CDRead cdread_feature;
-			if ( cmd.getCDReadFeatureDescriptor( &cdread_feature ) ) {
+			if ( cmd.getFeatureCDRead( &cdread_feature ) ) {
 
 				printf( "[CD Read Feature Descriptor]\n" );
 				
@@ -172,7 +171,7 @@ int main( void ) {
 
 
 			THSSCSI_FeatureDescriptor_RemovableMedium rem_media_feature;
-			if ( cmd.getRemovableMediumFeatureDescriptor( &rem_media_feature ) ) {
+			if ( cmd.getFeatureRemovableMedium( &rem_media_feature ) ) {
 
 				printf( "\n[Removable Medium Feature Descriptor]\n" );
 				ConsoleOut_FeatureDescriptorHeader( &rem_media_feature.header, false, "\t" );
@@ -187,7 +186,7 @@ int main( void ) {
 			}
 
 			THSSCSI_FeatureDescriptor_DriveSerialNumber driveSerialNumber_desc;
-			if ( cmd.getDriveSerialNumberFeatureDescriptor( &driveSerialNumber_desc) ) {
+			if ( cmd.getFeatureDriveSerialNumber( &driveSerialNumber_desc) ) {
 				printf( "\n[Drive Serial Number Feature Descriptor]\n" );
 				ConsoleOut_FeatureDescriptorHeader( &driveSerialNumber_desc.header, false, "\t" );
 				printf( "\n\tSerial Number : %s\n", driveSerialNumber_desc.SerialNumber );
@@ -242,7 +241,7 @@ void ConsoleOut_FeatureDescriptorHeader( THSSCSI_FeatureDescriptorHeader* pHeade
 	if ( pHeader == nullptr )return;
 	if ( firstNewLine ) printf( "\n" );
 	printf( "%sHeader:\n", prefix.c_str( ) );
-	printf( "%s\tFeature Code : 0x%02X%02X\n", prefix.c_str( ),pHeader->FeatureCode[0], pHeader->FeatureCode[1] );
+	printf( "%s\tFeature Code : 0x%04X\n", prefix.c_str( ),pHeader->FeatureCode );
 	printf( "%s\tCurrent : %d\n", prefix.c_str( ), pHeader->Current );
 	printf( "%s\tPersistent : %d\n", prefix.c_str( ),pHeader->Persistent );
 	printf( "%s\tVersion : %d\n", prefix.c_str( ),pHeader->Version );

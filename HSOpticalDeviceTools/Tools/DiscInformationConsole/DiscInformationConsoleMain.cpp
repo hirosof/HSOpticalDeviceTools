@@ -29,13 +29,13 @@ int main( void ) {
 	std::string sep( 80, '-' );
 
 	printf( "【光学ドライブリスト】\n\n" );
-	printf( "番号：[ドライブ文字] デバイス名\n" );
+	printf( "番号：[ドライブ文字] デバイス表示名\n" );
 	printf( "%s\n", sep.c_str( ) );
 	for ( uint8_t id = 0; id < optical_drives_enum.uOpticalDriveCount; id++ ) {
 
 		printf( "%4u：[%c:]", id, optical_drives_enum.Drives[id].Letter );
 		if ( optical_drives_enum.Drives[id].bIncludedInfo ) {
-			printf( " %s", optical_drives_enum.Drives[id].Info.DeviceName );
+			printf( " %s", optical_drives_enum.Drives[id].Info.DisplayName );
 		}
 		printf( "\n" );
 	}

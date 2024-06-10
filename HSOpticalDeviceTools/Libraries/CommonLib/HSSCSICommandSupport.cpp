@@ -47,3 +47,26 @@ bool HSSCSI_InitializeCommandData( THSSCSI_CommandData* pData ) {
 
 	return true;
 }
+
+std::string HSSCSI_GetConnectInterfaceNameStringByName( const EHSSCSI_ConnectInterfaceName name ) {
+	switch ( name ) {
+		case EHSSCSI_ConnectInterfaceName::SCSI:
+			return std::string( "SCSI" );
+		case EHSSCSI_ConnectInterfaceName::ATAPI:
+			return std::string( "ATAPI" );
+		case EHSSCSI_ConnectInterfaceName::IEEE1394_1995:
+			return std::string( "IEEE1394-1995" );
+		case EHSSCSI_ConnectInterfaceName::IEEE1394A:
+			return std::string( "IEEE1394A" );
+		case EHSSCSI_ConnectInterfaceName::Fibre_Channel:
+			return std::string( "Fibre Channel" );
+		case EHSSCSI_ConnectInterfaceName::IEEE1394B:
+			return std::string( "IEEE1394B" );
+		case EHSSCSI_ConnectInterfaceName::Serial_ATAPI:
+			return std::string( "Serial ATA" );
+		case EHSSCSI_ConnectInterfaceName::USB:
+			return std::string( "USB" );
+		default:
+			return std::string( "Unknown" );
+	}
+}

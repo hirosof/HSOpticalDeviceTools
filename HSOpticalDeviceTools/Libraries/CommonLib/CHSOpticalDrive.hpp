@@ -111,7 +111,6 @@ struct THSSCSI_MechanismStatus {
 };
 
 
-
 #pragma pack(pop)
 
 

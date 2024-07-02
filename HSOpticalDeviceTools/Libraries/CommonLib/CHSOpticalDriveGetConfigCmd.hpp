@@ -226,6 +226,9 @@ public:
 	bool getCurrentProfileNumber( uint16_t* pCurrentProfile ) const;
 	bool getCurrentProfile( HSSCSI_ProfilesItem* pCurrentProfileItem ) const;
 	EHSSCSI_ProfileName getCurrentProfileName( void ) const;
+	std::string getCurrentProfileNameString( bool groupOfSameType = true ) const;
+
+
 	EHSSCSI_ProfileFamilyName getCurrentProfileFamilyName(void) const;
 	std::string getCurrentProfileFamilyNameString( void ) const;
 

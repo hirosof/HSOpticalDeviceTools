@@ -372,6 +372,10 @@ EHSSCSI_ProfileName CHSOpticalDriveGetConfigCmd::getCurrentProfileName( void ) c
     return EHSSCSI_ProfileName::Unknown;
 }
 
+std::string CHSOpticalDriveGetConfigCmd::getCurrentProfileNameString( bool groupOfSameType ) const {
+    return this->GetProfileNameString( this->getCurrentProfileName( ), groupOfSameType );
+}
+
 EHSSCSI_ProfileFamilyName CHSOpticalDriveGetConfigCmd::getCurrentProfileFamilyName( void ) const {
     return this->GetProfileFamilyName( this->getCurrentProfileName( ) );
 }

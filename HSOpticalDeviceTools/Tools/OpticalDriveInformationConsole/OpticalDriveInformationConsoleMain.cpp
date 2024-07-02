@@ -7,7 +7,8 @@
 
 void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res, bool firstNewLine = false, std::string prefix = "" );
 
-void DriveUnitProcess( THSOpticalDriveInfo driveInfo );
+void DriveUnitProcess( THSOpticalDriveInfo driveInfo, const CAtlStringW displayDriveName );
+
 void PrintDeviceBasicInfo( CHSOpticalDrive* pDrive, const THSOpticalDriveInfo* pDriveInfo = nullptr );
 void PrintFunctionsInformation( CHSOpticalDrive* pDrive );
 
@@ -51,22 +52,34 @@ int main( void ) {
 	}
 	printf( "\n\n" );
 
+	CAtlStringW displayDriveName, displayDriveNameForSummaryTag;
+
 	for ( size_t i = 0; i < optical_drives_enum.uOpticalDriveCount; i++ ) {
 
-		DriveUnitProcess( optical_drives_enum.Drives[i] );
+		displayDriveName.Format( L"[`%C:\\`]", optical_drives_enum.Drives[i].Letter );
+
+		if ( optical_drives_enum.Drives[i].bIncludedInfo ) displayDriveName.AppendFormat( L" %S", optical_drives_enum.Drives[i].Info.DisplayName );
+
+		displayDriveNameForSummaryTag = displayDriveName;
+		displayDriveNameForSummaryTag.Remove( '`' );
+
+
+		printf( "<details>\n\n" );
+		printf( "<summary>%S</summary>\n\n" , displayDriveNameForSummaryTag.GetString() );
+
+		DriveUnitProcess( optical_drives_enum.Drives[i], displayDriveName);
 
 		if ( cmdlineParamParser.hasNamedOption( L"drivewait" ) && ((i+1)!=optical_drives_enum.uOpticalDriveCount)) {
 			system( "pause" );
 		}
 
-		printf( "\n\n" );
-
+		printf( "\n</details>\n\n" );
 
 	}
 #if _DEBUG
 	PrintDriveIndependentDebugInformation( );
-#endif
 	printf( "\n\n" );
+#endif
 
 	if ( ( !cmdlineParamParser.hasNamedOption( L"endnopause" ) ) && ( !cmdlineParamParser.hasNamedOption( L"endnowait" ) ) ) {
 		system( "pause" );
@@ -88,13 +101,13 @@ void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res, bool firstNewLine, std::str
 	printf( "\n" );
 }
 
-void DriveUnitProcess( THSOpticalDriveInfo driveInfo ) {
+void DriveUnitProcess( THSOpticalDriveInfo driveInfo, const CAtlStringW displayDriveName ) {
 
 	CHSOpticalDrive drive;
 
-	printf( "## [`%c:\\`]", driveInfo.Letter );
+
+	printf( "## %S", displayDriveName.GetString( ) );
 	
-	if ( driveInfo.bIncludedInfo ) printf( " %s", driveInfo.Info.DisplayName );
 	printf( "\n\n" );
 
 
@@ -104,10 +117,14 @@ void DriveUnitProcess( THSOpticalDriveInfo driveInfo ) {
 	}
 
 	PrintDeviceBasicInfo( &drive, &driveInfo );
+	printf( "\n" );
 
 	PrintFunctionsInformation( &drive );
+	printf( "\n" );
 
 	PrintSupportProfiles( &drive );
+	printf( "\n" );
+
 	PrintSupportFeatureCodeList( &drive );
 
 }
@@ -185,8 +202,7 @@ void PrintDeviceBasicInfo(CHSOpticalDrive* pDrive, const THSOpticalDriveInfo* pD
 
 	printf( "|メディアがセットされているか|%s|\n", pDrive->isMediaPresent( ) ? "はい" : "いいえ" );
 
-	printf( "\n" );
-
+	
 }
 
 void PrintFunctionsInformation( CHSOpticalDrive* pDrive ) {
@@ -213,7 +229,7 @@ void PrintFunctionsInformation( CHSOpticalDrive* pDrive ) {
 	printf( "|START STOP UNITコマンドでのトレイ引き戻しをサポートするか|%s|\n", ( fd_removableMedium.Load ) ? "はい" : "いいえ" );
 	printf( "|PREVENT ALLOW MEDIUM REMOVALコマンドでのトレイのロックをサポートするか|%s|\n", ( fd_removableMedium.Lock ) ? "はい" : "いいえ" );
 
-	printf( "\n" );
+
 }
 
 void PrintSupportProfiles( CHSOpticalDrive* pDrive ) {
@@ -263,7 +279,6 @@ void PrintSupportProfiles( CHSOpticalDrive* pDrive ) {
 			printf( "|\n" );
 		}
 	}
-	printf( "\n" );
 
 }
 
@@ -298,7 +313,6 @@ void PrintSupportFeatureCodeList( CHSOpticalDrive* pDrive ) {
 		printf( "情報の取得に失敗しました\n" );
 		printf( "```\n" );
 	}
-	printf( "\n" );
 }
 
 
@@ -315,8 +329,6 @@ void PrintDriveIndependentDebugInformation( void ) {
 	for ( auto item : HSSCSI_FeatureNameStrings ) {
 		printf( "|0x%04X|`%s`|\n", item.first ,item.second.c_str());
 	}
-
-	printf( "\n" );
 
 }
 

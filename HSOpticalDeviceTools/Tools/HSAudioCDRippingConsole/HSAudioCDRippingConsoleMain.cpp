@@ -6,11 +6,11 @@
 #include <atlbase.h>
 #include <atlstr.h>
 #include "../../Libraries/CommonLib/CHSCompactDiscReader.hpp"
-#include "wave/HSWAVE.hpp"
-#include "hash/HSSHA1.hpp"
-#include "hash/HSSHA2.hpp"
-#include "RangeSpecifyStringParser.hpp"
-#include "CHSBase64.hpp"
+#include "../../common/CHSBase64.hpp"
+#include "../../Libraries/WaveFileIOLib/HSWAVE.hpp"
+#include "../../Libraries/HashLib/HSSHA1.hpp"
+#include "../../Libraries/HashLib/HSSHA2.hpp"
+#include "../../Libraries/InternalLib/RangeSpecifyStringParser.hpp"
 
 #pragma comment(lib,"winmm.lib")
 

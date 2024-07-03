@@ -162,8 +162,6 @@
     <ClCompile Include="AudioCDPlayTestConsoleMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CHSMalloc.hpp" />
-    <ClInclude Include="CHSWAVEOUT.hpp" />
     <ClInclude Include="AudioCDTrackReaderEngine.hpp" />
   </ItemGroup>
   <ItemGroup>

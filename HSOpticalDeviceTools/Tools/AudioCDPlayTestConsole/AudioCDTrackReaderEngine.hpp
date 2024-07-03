@@ -1,6 +1,6 @@
 #pragma once
 #include "../../Libraries/CommonLib/CHSCompactDiscReader.hpp"
-#include "CHSWAVEOUT.hpp"
+#include "../../common/CHSWAVEOUT.hpp"
 
 struct CDPlayInformation {
 	CHSOpticalDrive* pDrive;

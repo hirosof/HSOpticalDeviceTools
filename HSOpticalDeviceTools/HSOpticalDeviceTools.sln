@@ -37,6 +37,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HashLib", "Libraries\HashLi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InternalLib", "Libraries\InternalLib\InternalLib.vcxproj", "{BC3910B1-E23C-4D1B-86A5-EE6C4252BEBF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrayController", "Tools\TrayController\TrayController.vcxproj", "{68B99D76-28A3-4E58-B426-B68A0783A2FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -149,6 +151,14 @@ Global
 		{BC3910B1-E23C-4D1B-86A5-EE6C4252BEBF}.Release|x64.Build.0 = Release|x64
 		{BC3910B1-E23C-4D1B-86A5-EE6C4252BEBF}.Release|x86.ActiveCfg = Release|Win32
 		{BC3910B1-E23C-4D1B-86A5-EE6C4252BEBF}.Release|x86.Build.0 = Release|Win32
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Debug|x64.ActiveCfg = Debug|x64
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Debug|x64.Build.0 = Debug|x64
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Debug|x86.ActiveCfg = Debug|Win32
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Debug|x86.Build.0 = Debug|Win32
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Release|x64.ActiveCfg = Release|x64
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Release|x64.Build.0 = Release|x64
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Release|x86.ActiveCfg = Release|Win32
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -167,6 +177,7 @@ Global
 		{47A0F776-1785-4C42-9611-9193F603593E} = {1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}
 		{13041C6E-02F5-4876-8E58-11E6A57AA157} = {1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}
 		{BC3910B1-E23C-4D1B-86A5-EE6C4252BEBF} = {1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}
+		{68B99D76-28A3-4E58-B426-B68A0783A2FB} = {E33B7B84-979C-4A8B-9058-6B482B7F7010}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5C608A90-34FA-4934-AC45-EDCBEF90589F}

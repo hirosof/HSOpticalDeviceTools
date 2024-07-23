@@ -336,6 +336,8 @@ void DriveMain( const char DriveLetter, const ProcessMode Mode ) {
 			printf( "\t\tトレイを閉じる命令をサポートするか：%s\n", ( fd_rm.Load ) ? "はい" : "いいえ" );
 			printf( "\t\tトレイをロックする/ロックを解除する命令をサポートするか：%s\n", ( fd_rm.Lock ) ? "はい" : "いいえ" );
 			printf( "\n" );
+
+			/* ProcessMode::Info は ProcessMode::Status の処理も行うため、fallthroughする */
 		case ProcessMode::Status:
 			printf( "\t[トレイの状態]\n" );
 
@@ -374,7 +376,7 @@ void DriveMain( const char DriveLetter, const ProcessMode Mode ) {
 
 			break;
 		case ProcessMode::Load:
-			printf( "\t[トレイを開く処理の状況と結果]\n" );
+			printf( "\t[トレイを閉じる処理の状況と結果]\n" );
 			if ( trayState == EHSOD_TrayState::Closed ) {
 				printf( "\t既ににトレイが閉じられています。\n" );
 
@@ -440,6 +442,7 @@ void DriveMain( const char DriveLetter, const ProcessMode Mode ) {
 
 			break;
 		case ProcessMode::Lock:
+			printf( "\t[トレイのロック処理結果]\n" );
 			if ( !fd_rm.Lock ) {
 				printf( "\tドライブはトレイをロックする命令をサポートしていません。処理を中止します。\n" );
 			} else {
@@ -449,13 +452,14 @@ void DriveMain( const char DriveLetter, const ProcessMode Mode ) {
 				if ( bret ) {
 					printf( "\tトレイのロック設定は正常に終了しました。\n" );
 				} else {
-					printf( "\tトレイのロック設定は失敗しました。 (詳細 ：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)\n",
+					printf( "\tトレイのロック設定は失敗しました。 (詳細：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)\n",
 						res.scsiStatus.statusByteCode, res.scsiSK, res.scsiASC, res.scsiASCQ );
 				}
 			}
 
 			break;
 		case ProcessMode::Unlock:
+			printf( "\t[トレイのロック解除処理結果]\n" );
 			if ( !fd_rm.Lock ) {
 				printf( "\tドライブはトレイのロックを解除する命令をサポートしていません。処理を中止します。\n" );
 			} else {
@@ -465,13 +469,11 @@ void DriveMain( const char DriveLetter, const ProcessMode Mode ) {
 				if ( bret ) {
 					printf( "\tトレイのロック解除設定は正常に終了しました。\n" );
 				} else {
-					printf( "\tトレイのロック解除設定は失敗しました。 (詳細 ：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)\n",
+					printf( "\tトレイのロック解除設定は失敗しました。 (詳細：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)\n",
 						res.scsiStatus.statusByteCode, res.scsiSK, res.scsiASC, res.scsiASCQ );
 				}
 			}
-
 			break;
-
 		default:
 			break;
 	}
@@ -489,7 +491,7 @@ bool  TrayOpenOrClose( CHSOpticalDrive* pDrive, DoTrayState state, std::string* 
 		CAtlStringA resultmes;
 
 		if ( HSSCSIStatusToStatusCode( res.scsiStatus ) != EHSSCSIStatusCode::Good ) {
-			resultmes.Format( "失敗しました。 (詳細 ：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)",
+			resultmes.Format( "失敗しました。 (詳細：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)",
 				res.scsiStatus.statusByteCode, res.scsiSK, res.scsiASC, res.scsiASCQ );
 		} else {
 			resultmes.Format( "成功しました。" );

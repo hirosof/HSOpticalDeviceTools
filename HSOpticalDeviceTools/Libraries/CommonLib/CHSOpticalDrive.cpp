@@ -329,6 +329,53 @@ bool CHSOpticalDrive::trayClose( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWo
     return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
+bool CHSOpticalDrive::trayLock( HSSCSI_SPTD_RESULT* pDetailResult ) const {
+    THSSCSI_CommandData params;
+
+    HSSCSI_InitializeCommandData( &params );
+
+    params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
+    params.pSPTDStruct->CdbLength = 6;
+    params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_PREVENT_ALLOW_MEDIUM_REMOVAL;
+    params.pSPTDStruct->Cdb[4] = 1;
+
+    if ( this->executeCommand( &params ) == false ) {
+        return false;
+    }
+
+    if ( pDetailResult != nullptr ) {
+        *pDetailResult = params.result;
+        pDetailResult->resultSize = 0;
+    }
+
+    if ( params.result.DeviceIOControlResult == FALSE ) return false;
+
+    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+}
+
+bool CHSOpticalDrive::trayUnlock( HSSCSI_SPTD_RESULT* pDetailResult ) const {
+    THSSCSI_CommandData params;
+
+    HSSCSI_InitializeCommandData( &params );
+
+    params.pSPTDStruct->DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
+    params.pSPTDStruct->CdbLength = 6;
+    params.pSPTDStruct->Cdb[0] = HSSCSI_CDB_OC_PREVENT_ALLOW_MEDIUM_REMOVAL;
+    params.pSPTDStruct->Cdb[4] = 0;
+
+    if ( this->executeCommand( &params ) == false ) {
+        return false;
+    }
+
+    if ( pDetailResult != nullptr ) {
+        *pDetailResult = params.result;
+        pDetailResult->resultSize = 0;
+    }
+
+    if ( params.result.DeviceIOControlResult == FALSE ) return false;
+
+    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+}
 
 
 bool CHSOpticalDrive::isTrayOpened( void ) const {

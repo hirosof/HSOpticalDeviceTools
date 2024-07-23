@@ -160,8 +160,11 @@ public:
 	bool ejectMedia( bool asyncWork = true ) const;
 	bool loadMedia( bool asyncWork = true ) const;
 
-	bool trayOpen(HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
-	bool trayClose(HSSCSI_SPTD_RESULT* pDetailResult = nullptr,bool asyncWork = true ) const;
+	bool trayOpen( HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
+	bool trayClose( HSSCSI_SPTD_RESULT* pDetailResult = nullptr, bool asyncWork = true ) const;
+
+	bool trayLock( HSSCSI_SPTD_RESULT* pDetailResult = nullptr ) const;
+	bool trayUnlock( HSSCSI_SPTD_RESULT* pDetailResult = nullptr ) const;
 
 	bool isTrayOpened( void) const;
 	EHSOD_TrayState checkTrayState(void )const;

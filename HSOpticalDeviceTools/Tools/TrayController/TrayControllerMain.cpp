@@ -21,7 +21,9 @@ enum struct ProcessMode {
 	Status,
 	Eject,
 	Load,
-	ReLoad
+	ReLoad,
+	Lock,
+	Unlock
 };
 
 
@@ -38,7 +40,10 @@ const std::unordered_map<std::string, ProcessMode>  modeMap {
 	{"load" , ProcessMode::Load },
 	{"open" , ProcessMode::Eject },
 	{"close" , ProcessMode::Load },
-	{"reload" , ProcessMode::ReLoad }
+	{"reload" , ProcessMode::ReLoad },
+	{"lock" , ProcessMode::Lock },
+	{"unlock" , ProcessMode::Unlock },
+
 };
 
 
@@ -47,7 +52,10 @@ const std::vector < std::pair<std::string, ProcessMode>>  DescriptionToModeArray
 	{"トレイの状態を取得する" , ProcessMode::Status },
 	{"トレイを開く" , ProcessMode::Eject },
 	{"トレイを閉じる" , ProcessMode::Load },
-	{"トレイを開いて再度閉じる" , ProcessMode::ReLoad }
+	{"トレイを開いて再度閉じる" , ProcessMode::ReLoad },
+	{"トレイをロックする" , ProcessMode::Lock },
+	{"トレイのロックを解除する" , ProcessMode::Unlock },
+
 };
 
 
@@ -431,6 +439,39 @@ void DriveMain( const char DriveLetter, const ProcessMode Mode ) {
 			}
 
 			break;
+		case ProcessMode::Lock:
+			if ( !fd_rm.Lock ) {
+				printf( "\tドライブはトレイをロックする命令をサポートしていません。処理を中止します。\n" );
+			} else {
+				HSSCSI_SPTD_RESULT res;
+				bool bret =  drive.trayLock( &res );
+
+				if ( bret ) {
+					printf( "\tトレイのロック設定は正常に終了しました。\n" );
+				} else {
+					printf( "\tトレイのロック設定は失敗しました。 (詳細 ：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)\n",
+						res.scsiStatus.statusByteCode, res.scsiSK, res.scsiASC, res.scsiASCQ );
+				}
+			}
+
+			break;
+		case ProcessMode::Unlock:
+			if ( !fd_rm.Lock ) {
+				printf( "\tドライブはトレイのロックを解除する命令をサポートしていません。処理を中止します。\n" );
+			} else {
+				HSSCSI_SPTD_RESULT res;
+				bool bret = drive.trayUnlock( &res );
+
+				if ( bret ) {
+					printf( "\tトレイのロック解除設定は正常に終了しました。\n" );
+				} else {
+					printf( "\tトレイのロック解除設定は失敗しました。 (詳細 ：SCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)\n",
+						res.scsiStatus.statusByteCode, res.scsiSK, res.scsiASC, res.scsiASCQ );
+				}
+			}
+
+			break;
+
 		default:
 			break;
 	}

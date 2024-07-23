@@ -446,11 +446,42 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	stTotalStartMS = timeGetTime( );
 	
 	count = 0;
+	EHSSCSI_ReadyStatus driveStatus;
+	bool breakProcess;
 	for ( auto it = specifyTracks.begin( ); it != specifyTracks.end( ); it++ ) {
 		RippingTrack = *it;
 
 		count++;
 		printf( "\n\t[Track %02u] (%u/%zu)\n", RippingTrack  , count ,specifyTracks.size());
+
+
+		breakProcess = false;
+
+		driveStatus = pDrive->checkReady(  );
+
+		switch ( driveStatus ) {
+			case EHSSCSI_ReadyStatus::Ready:
+				break;
+			case EHSSCSI_ReadyStatus::NotReady:
+				printf( "\n\t\t処理前におけるドライブの状態確認にて、ドライブにアクセスできない状態になったことを確認しました。\n" );
+				breakProcess = true;
+				break;
+			case EHSSCSI_ReadyStatus::FailedGotStatus:
+				printf( "\n\t\t処理前におけるドライブの状態取得に失敗しました。\n" );
+				breakProcess = true;
+				break;
+			case EHSSCSI_ReadyStatus::MediumNotPresent:
+				printf( "\n\t\t処理前におけるドライブの状態確認にて、ディスクがイジェクトされたことを確認しました。\n" );
+				breakProcess = true;
+				break;
+			default:
+				break;
+		}
+		
+		if ( breakProcess ) {
+			printf( "\t\t以後の処理を中断します。\n" );
+			break;
+		}
 
 		if ( rawToc.trackItems[RippingTrack].TrackType != EHSSCSI_TrackType::Audio2Channel ) {
 			printf( "\n\t\tリッピング不可能なトラックなためスキップします\n" );

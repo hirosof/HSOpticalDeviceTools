@@ -150,7 +150,7 @@ public:
 
 
 	bool isReady( void ) const;
-	EHSSCSI_ReadyStatus checkReady( HSSCSI_SPTD_RESULT *pDetailResult ) const;
+	EHSSCSI_ReadyStatus checkReady( HSSCSI_SPTD_RESULT *pDetailResult = nullptr ) const;
 
 
 	bool isMediaPresent( void )const;

@@ -616,7 +616,7 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	if ( ( track.TrackLength.u32Value % once_read_size.u32Value ) != 0 ) numberOfReadBlocks++;
 
 	CHSSCSIGeneralBuffer buffer;
-	size_t readSuccessSectorLenth;
+	size_t readSuccessSectorLength;
 	UHSSCSI_AddressData32 pos;
 
 	pWaveWriter->BeginDataChunk( );
@@ -630,17 +630,19 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	for ( uint32_t block = 0; block < numberOfReadBlocks; block++ ) {
 		pos.u32Value = once_read_size.u32Value * block;
 
-		readSuccessSectorLenth = cdreader.readStereoAudioTrack( &buffer,
+		readSuccessSectorLength = cdreader.readStereoAudioTrack( &buffer,
 			track.TrackNumber,
 			pos, EHSSCSI_AddressFormType::LBA,
 			once_read_size, EHSSCSI_AddressFormType::LBA );
 
-		if ( readSuccessSectorLenth == 0 )break;
+		if ( readSuccessSectorLength == 0 ) {
+			break;
+		}
 
 		pWaveWriter->AdditionalDataChunkContent( buffer.getBuffer( ),
-			static_cast<uint32_t>( readSuccessSectorLenth * CHSCompactDiscReader::NormalCDDATrackSectorSize ) );
+			static_cast<uint32_t>( readSuccessSectorLength * CHSCompactDiscReader::NormalCDDATrackSectorSize ) );
 
-		currentPositionSector = pos.u32Value + readSuccessSectorLenth;
+		currentPositionSector = pos.u32Value + readSuccessSectorLength;
 		printf( "\r\t\têiíªèÛãµÅF%.2f%%äÆóπ (%zu / %u sectors)", ( block + 1 ) * 100.0 / numberOfReadBlocks,
 			currentPositionSector, track.TrackLength.u32Value );
 

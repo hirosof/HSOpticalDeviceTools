@@ -771,8 +771,8 @@ size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer
 		return 0;
 	}
 
-
-	size_t  real_start_offset = read_offset_LBA + it->second.TrackStartAddress.u32Value;
+	uint32_t track_start_address = it->second.TrackStartAddress.u32Value;
+	size_t  real_start_offset = read_offset_LBA + track_start_address;
 	size_t real_end_offset = min( it->second.TrackEndAddress.u32Value, real_start_offset + read_size_LBA - 1 );
 	size_t real_read_size = real_end_offset - real_start_offset + 1;
 
@@ -794,10 +794,16 @@ size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer
 	uint8_t *pCurrent;
 	DWORD read_result_size;
 	uint32_t  read_result_all_size = 0;
+
+	bool bRetry = false, loadSuccess;
 	BOOL bret;
+	DWORD lastError;
+
 	RAW_READ_INFO info;
 	info.TrackMode = CDDA;
 	for ( size_t i = 0; i < NumberOfReadUnit; i++ ) {
+
+
 		info.DiskOffset.QuadPart = ( real_start_offset + i* read_unit_size) *2048;
 		info.SectorCount = static_cast<DWORD>( read_unit_size);
 		if ( ( i + 1 ) == NumberOfReadUnit ) {
@@ -807,16 +813,41 @@ size_t CHSCompactDiscReader::readStereoAudioTrack( CHSSCSIGeneralBuffer* pBuffer
 		}
 		pCurrent = pTop + ( NormalCDDATrackSectorSize * i * read_unit_size );
 
-		bret = DeviceIoControl( this->mp_Drive->getHandle( ),
-			IOCTL_CDROM_RAW_READ,
-			&info,
-			static_cast<DWORD>( sizeof( RAW_READ_INFO ) ),
-			pCurrent,
-			static_cast<DWORD>( info.SectorCount * NormalCDDATrackSectorSize),
-			&read_result_size,
-			nullptr );
-		
-		if ( bret == FALSE ) {
+		do {
+
+			loadSuccess = false;
+			bRetry = false;
+
+			bret = DeviceIoControl( this->mp_Drive->getHandle( ),
+				IOCTL_CDROM_RAW_READ,
+				&info,
+				static_cast<DWORD>( sizeof( RAW_READ_INFO ) ),
+				pCurrent,
+				static_cast<DWORD>( info.SectorCount * NormalCDDATrackSectorSize ),
+				&read_result_size,
+				nullptr );
+
+			lastError = GetLastError( );
+
+			if ( bret ) {
+				loadSuccess = true;
+				break;
+			}
+
+			/*
+				IOCTL_CDROM_RAW_READ の実行失敗要因がERROR_NOT_READYの場合は
+				状態を再確認し、準備が出来ている場合はリトライする。
+			*/
+			if ( ( lastError == ERROR_NOT_READY ) && this->mp_Drive->isReady( ) ) {
+				bRetry = true;
+			} else {
+				break;
+			}
+
+		} while ( bRetry );
+
+
+		if ( !loadSuccess ) {
 			break;
 		}
 

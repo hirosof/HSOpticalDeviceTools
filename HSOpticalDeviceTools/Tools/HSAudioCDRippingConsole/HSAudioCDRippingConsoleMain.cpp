@@ -428,15 +428,29 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	std::pair<uint32_t, std::wstring> ripping_target_track_file_item;
 	uint32_t RippingTrack = 0;
 
-	
 
 	wchar_t output_file_name[260];
-	SYSTEMTIME stf;
+	bool isDriveLockSupport = false;
+	CHSOpticalDriveGetConfigCmd cmd( pDrive );
+	THSSCSI_FeatureDescriptor_RemovableMedium  fd_rm;
+
+
+	if ( cmd.getFeatureRemovableMedium( &fd_rm ) ) {
+		isDriveLockSupport = fd_rm.Lock;
+	}
+
 
 
 	printf( "\n【リッピング状況】\n" );
 
 	printf( "\n\t[前処理]\n");
+
+	if ( isDriveLockSupport ) {
+		printf( "\n\t\tトレイをロックしています..." );
+		if ( pDrive->trayLock( ) ) printf( "成功" );
+		else printf( "失敗" );
+	}
+
 	printf( "\n\t\tスピンアップしています..." );
 	pDrive->spinUp( nullptr, false );
 	printf( "完了\n\n" );
@@ -445,9 +459,11 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	DWORD stTotalStartMS, stTotalTimeSec,stTotalTimeMS;
 	stTotalStartMS = timeGetTime( );
 	
-	count = 0;
+	SYSTEMTIME stf;
 	EHSSCSI_ReadyStatus driveStatus;
 	bool breakProcess;
+	count = 0;
+
 	for ( auto it = specifyTracks.begin( ); it != specifyTracks.end( ); it++ ) {
 		RippingTrack = *it;
 
@@ -561,7 +577,14 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	printf( "\n\t[後処理]\n" );
 	printf( "\n\t\tスピンダウンしています..." );
 	pDrive->spinDown( nullptr, false );
-	printf( "完了\n\n" );
+	printf( "完了" );
+	if ( isDriveLockSupport ) {
+		printf( "\n\t\tトレイのロックを解除しています..." );
+		if ( pDrive->trayUnlock( ) ) printf( "成功" );
+		else printf( "失敗" );
+	}
+	printf( "\n\n" );
+
 
 	printf( "\n【リッピング結果】\n\n" );
 

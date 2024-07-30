@@ -18,7 +18,7 @@ std::string Console_ReadLine( );
 
 void DriveProcessEntry( char driveletter );
 void DiscProcess( CHSOpticalDrive* pDrive );
-void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track );
+void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , bool *pCancelled = nullptr);
 
 int main( void ) {
 
@@ -443,7 +443,9 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 
 	printf( "\n【リッピング状況】\n" );
 
-	printf( "\n\t[前処理]\n");
+	printf( "\n\t処理中にキャンセルする場合はESCキーを押してください。\n" );
+
+	printf( "\n\t[前処理]\n" );
 
 	if ( isDriveLockSupport ) {
 		printf( "\n\t\tトレイをロックしています..." );
@@ -463,6 +465,7 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	EHSSCSI_ReadyStatus driveStatus;
 	bool breakProcess;
 	count = 0;
+	bool rippingProcessCancelled = false;
 
 	for ( auto it = specifyTracks.begin( ); it != specifyTracks.end( ); it++ ) {
 		RippingTrack = *it;
@@ -558,7 +561,8 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 			pcm.wf.nAvgBytesPerSec = pcm.wf.nBlockAlign * pcm.wf.nSamplesPerSec;
 			wave.WriteFormatChunkType( pcm );
 
-			RippingMain( &wave, pDrive, rawToc.trackItems[RippingTrack] );
+
+			RippingMain( &wave, pDrive, rawToc.trackItems[RippingTrack], &rippingProcessCancelled );
 
 			wave.Close( );
 
@@ -566,6 +570,11 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 			ripping_target_track_file_item.second = output_file_name;
 			ripping_target_track_files.push_back( ripping_target_track_file_item );
 
+			
+			if ( rippingProcessCancelled ) {
+				printf( "\n\t\tキャンセルされました、以後のリッピングを中止します。\n" );
+				break;
+			}
 		}
 
 	}
@@ -598,10 +607,16 @@ void DiscProcess( CHSOpticalDrive* pDrive ) {
 	for ( auto& item : ripping_target_track_files ) {
 		printf( "\t\t[Track %02u]：%S\n", item.first, item.second.c_str( ) );
 	}
+
+	if ( rippingProcessCancelled ) {
+		printf( "\n\t\t※ 今回キャンセルされましたので、以上のリストにある最後のファイルは\n\t\t※ トラックの途中までとなっています。\n" );
+	}
+
+	
 }
 
 
-void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track ) {
+void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track, bool* pCancelled ) {
 
 	if ( pDrive == nullptr ) return;
 	if ( pWaveWriter == nullptr ) return;
@@ -628,6 +643,14 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 	uint32_t rest_time_ms, rest_time_sec;
 
 	for ( uint32_t block = 0; block < numberOfReadBlocks; block++ ) {
+
+		if ( pCancelled ) {
+			if ( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 ) {
+				*pCancelled = true;
+				break;
+			}
+		}
+
 		pos.u32Value = once_read_size.u32Value * block;
 
 		readSuccessSectorLength = cdreader.readStereoAudioTrack( &buffer,

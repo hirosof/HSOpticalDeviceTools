@@ -89,7 +89,7 @@ int main( void ) {
 		printf( "%s\n", sep.c_str( ) );
 		for ( uint8_t id = 0; id < optical_drives_enum.uOpticalDriveCount; id++ ) {
 
-			printf( "%4u：[%c:]", id, optical_drives_enum.Drives[id].Letter );
+			printf( "%4u：[%c:\\]", id, optical_drives_enum.Drives[id].Letter );
 			if ( optical_drives_enum.Drives[id].bIncludedInfo ) {
 				printf( " %s", optical_drives_enum.Drives[id].Info.DisplayName );
 			}
@@ -465,6 +465,8 @@ enum struct HSTaskDialogCustomButton {
 	SeekToBack60Sec,
 	SeekToBack30Sec,
 	SeekToBack10Sec,
+	SeekToBack5Sec,
+	SeekToForward5Sec,
 	SeekToForward10Sec,
 	SeekToForward30Sec,
 	SeekToForward60Sec,
@@ -496,7 +498,7 @@ void HSShowDialog( TProgressDialogData* pData ) {
 	tc.dwFlags |= TDF_EXPAND_FOOTER_AREA | TDF_EXPANDED_BY_DEFAULT;
 
 	tc.dwCommonButtons = 0;
-	tc.cxWidth = 400;
+	tc.cxWidth = 475;
 
 	wchar_t trackStr[64];
 	THSOpticalDriveDeviceInfo di;
@@ -518,12 +520,12 @@ void HSShowDialog( TProgressDialogData* pData ) {
 
 	titileStr.Append( L"再生コントロールダイアログ - " );
 	if ( pData->playInformation.pDrive->getCurrentDeviceInfo( &di ) ) {
-		titileStr.AppendFormat(L"[%C:] %S  / Track %02u",
+		titileStr.AppendFormat(L"[%C:\\] %S  / Track %02u",
 			pData->playInformation.pDrive->getCurrentDriveLetter(),
 			di.DisplayName,
 			pData->playInformation.track.TrackNumber );
 
-		mainInstructionStr.Format(L"Drive = [%C:] %S\n%s",
+		mainInstructionStr.Format(L"Drive = [%C:\\] %S\n%s",
 			pData->playInformation.pDrive->getCurrentDriveLetter(),
 			di.DisplayName,trackStr );
 	} else {
@@ -541,6 +543,8 @@ void HSShowDialog( TProgressDialogData* pData ) {
 		{(int) HSTaskDialogCustomButton::SeekToBack60Sec,L"-60秒"},
 		{(int) HSTaskDialogCustomButton::SeekToBack30Sec,L"-30秒"},
 		{(int) HSTaskDialogCustomButton::SeekToBack10Sec,L"-10秒"},
+		{(int) HSTaskDialogCustomButton::SeekToBack5Sec,L"-5秒"},
+		{(int) HSTaskDialogCustomButton::SeekToForward5Sec,L"+5秒"},
 		{(int) HSTaskDialogCustomButton::SeekToForward10Sec,L"+10秒"},
 		{(int) HSTaskDialogCustomButton::SeekToForward30Sec,L"+30秒"},
 		{(int) HSTaskDialogCustomButton::SeekToForward60Sec,L"+60秒"},
@@ -695,6 +699,12 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			case HSTaskDialogCustomButton::SeekToBack10Sec:
 				pwo->SeekToBackTime( 10 * 1000 );
 				break;
+			case HSTaskDialogCustomButton::SeekToBack5Sec:
+				pwo->SeekToBackTime( 5 * 1000 );
+				break;
+			case HSTaskDialogCustomButton::SeekToForward5Sec:
+				pwo->SeekToForwardTime( 5 * 1000 );
+			break;
 			case HSTaskDialogCustomButton::SeekToForward10Sec:
 				pwo->SeekToForwardTime( 10 * 1000 );
 				break;
@@ -854,22 +864,19 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		uint32_t pos_time = pwo->GetCurrentPositionTime( ) / 1000;
 		uint32_t length_time = length_samples / pwo->GetFormat( ).nSamplesPerSec;
 
-		size_t pos_sectors = pos_sample * pwo->GetFormat( ).nBlockAlign / CHSCompactDiscReader::NormalCDDATrackSectorSize;
-		size_t length_sectors = length_samples * pwo->GetFormat( ).nBlockAlign / CHSCompactDiscReader::NormalCDDATrackSectorSize;
+		size_t  pos_bytes = pos_sample * pwo->GetFormat( ).nBlockAlign;
+		size_t length_bytes = length_samples * pwo->GetFormat( ).nBlockAlign;
+
+		size_t pos_sectors = pos_bytes / CHSCompactDiscReader::NormalCDDATrackSectorSize;
+		size_t length_sectors = length_bytes/ CHSCompactDiscReader::NormalCDDATrackSectorSize;
+
 		double PlayPosRatio = static_cast<double>(pos_sample) / length_samples;
 
 		str.AppendFormat( L"【再生位置 (トラック単位)】" );
-
-
 		
 		str.AppendFormat( L"\n時間単位 = %s / %s\n",
 			SecondsToString( pos_time, pData->timeFormat ).GetString( ),
 			SecondsToString( length_time, pData->timeFormat ).GetString( )
-		);
-
-		str.AppendFormat( L"サンプル単位= %s / %s\n", 
-			GetCommaSplitNumberString(pos_sample).GetString(),
-			GetCommaSplitNumberString(length_samples).GetString( )
 		);
 
 		str.AppendFormat( L"セクタ単位 = %s / %s\n",
@@ -877,9 +884,19 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			GetCommaSplitNumberString( length_sectors ).GetString( )
 		);
 
+		str.AppendFormat( L"サンプル単位= %s / %s\n",
+			GetCommaSplitNumberString( pos_sample ).GetString( ),
+			GetCommaSplitNumberString( length_samples ).GetString( )
+		);
+
+		str.AppendFormat( L"バイト単位= %s / %s\n",
+			GetCommaSplitNumberString( pos_bytes ).GetString( ),
+			GetCommaSplitNumberString( length_bytes ).GetString( )
+		);
+
 		str.AppendFormat( L"パーセント単位 = %6.2f%%\n", PlayPosRatio * 100.0 );
 
-		const size_t text_progress_size = 50;
+		const size_t text_progress_size = 75;
 		double text_progress_pos;
 
 		for ( size_t i = 0; i < text_progress_size; i++ ) {
@@ -899,10 +916,11 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 		size_t pos_sectors_overall = pos_sectors + pData->playInformation.track.TrackStartAddress.u32Value;
 		size_t length_sectors_overall = pData->toc.sessionItems[pData->toc.LastSessionNumber].PointOfLeadOutAreaStart.u32Value;
 
-		size_t pos_samples_overall = pos_sectors_overall * CHSCompactDiscReader::NormalCDDATrackSectorSize + pos_bytes_additional_offset;
-		pos_samples_overall /= pwo->GetFormat( ).nBlockAlign;
+		size_t pos_bytes_overall = pos_sectors_overall * CHSCompactDiscReader::NormalCDDATrackSectorSize + pos_bytes_additional_offset;
+		size_t pos_samples_overall = pos_bytes_overall / pwo->GetFormat( ).nBlockAlign;
 		
-		size_t length_samples_overall  = length_sectors_overall * CHSCompactDiscReader::NormalCDDATrackSectorSize / pwo->GetFormat( ).nBlockAlign;
+		size_t length_bytes_overall = length_sectors_overall * CHSCompactDiscReader::NormalCDDATrackSectorSize;
+		size_t length_samples_overall = length_bytes_overall / pwo->GetFormat( ).nBlockAlign;
 
 		uint32_t pos_time_overall =  static_cast<uint32_t>( pos_samples_overall / pwo->GetFormat( ).nSamplesPerSec);
 		uint32_t length_time_overall = static_cast<uint32_t>( length_samples_overall / pwo->GetFormat( ).nSamplesPerSec);
@@ -915,15 +933,19 @@ HRESULT CALLBACK TaskDialogProc( HWND hwnd, UINT uNotification, WPARAM wp, LPARA
 			SecondsToString( length_time_overall, pData->timeFormat ).GetString( )
 		);
 
+		str.AppendFormat( L"セクタ単位 = %s / %s\n",
+			GetCommaSplitNumberString(pos_sectors_overall).GetString(),
+			GetCommaSplitNumberString(length_sectors_overall).GetString()
+		);
+
 		str.AppendFormat( L"サンプル単位= %s / %s\n",
 			GetCommaSplitNumberString( pos_samples_overall ).GetString( ),
 			GetCommaSplitNumberString( length_samples_overall ).GetString( )
 		);
 
-
-		str.AppendFormat( L"セクタ単位 = %s / %s\n",
-			GetCommaSplitNumberString(pos_sectors_overall).GetString(),
-			GetCommaSplitNumberString(length_sectors_overall).GetString()
+		str.AppendFormat( L"バイト単位= %s / %s\n",
+			GetCommaSplitNumberString( pos_bytes_overall ).GetString( ),
+			GetCommaSplitNumberString( length_bytes_overall ).GetString( )
 		);
 
 		str.AppendFormat( L"パーセント単位 = %6.2f%%\n", PlayPosPerOverall*100.0 );

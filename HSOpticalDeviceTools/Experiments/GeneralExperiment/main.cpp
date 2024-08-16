@@ -8,6 +8,11 @@
 void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res , bool firstNewLine = true , std::string prefix="" );
 void ConsoleOut_FeatureDescriptorHeader( THSSCSI_FeatureDescriptorHeader* pHeader, bool firstNewLine = true, std::string prefix = "" );
 
+
+void ConsoleOut_GUITHREADINFO( const GUITHREADINFO& info );
+
+
+
 int main( void ) {
 
 	THSEnumrateOpticalDriveInfo optical_drives_enum;
@@ -220,9 +225,65 @@ int main( void ) {
 
 	}
 
+
+
+	GUITHREADINFO foregroundGUIInfo;
+	GUITHREADINFO currentGUIInfo;
+
+	foregroundGUIInfo.cbSize = currentGUIInfo.cbSize = sizeof( GUITHREADINFO );
+
+	if ( GetGUIThreadInfo( NULL, &foregroundGUIInfo ) ) {
+		printf( "[foreground]\n" );
+		ConsoleOut_GUITHREADINFO( foregroundGUIInfo );
+		printf( "\n" );
+	}
+
+	DWORD dww;
+	if ( GetGUIThreadInfo( GetWindowThreadProcessId(GetConsoleWindow() , &dww ), &currentGUIInfo ) ) {
+		printf( "[currentGUIInfo]\n" );
+		ConsoleOut_GUITHREADINFO( currentGUIInfo );
+		printf( "dww = 0x%X\n" , dww );
+		printf( "\n" );
+	}
+
+
+	printf( "DesktopWindow : %p\n", GetDesktopWindow( ) );
+	printf( "GetActiveWindow : %p\n", GetActiveWindow( ) );
+	printf( "GetForegroundWindow : %p\n", GetForegroundWindow( ) );
+	printf( "GetConsoleWindow : %p\n", GetConsoleWindow( ) );
+	printf( "GetActiveWindowParent : %p\n", GetParent(GetActiveWindow( )) );
+	printf( "GetForegroundWindowParent : %p\n", GetParent( GetForegroundWindow( )) );
+	printf( "GetConsoleWindowParent : %p\n", GetParent( GetConsoleWindow( ) ));
+	printf( "GetWindowLongPtr (GWL_STYLE) : %I64d\n", GetWindowLongPtr( GetConsoleWindow( ), GWL_STYLE ) );
+	printf( "GetFocus : %p\n", GetFocus() );
+	printf( "\n" );
+	MessageBoxA( NULL, "", "", MB_OK );
+
+	printf( "DesktopWindow : %p\n", GetDesktopWindow( ) );
+	printf( "GetActiveWindow : %p\n", GetActiveWindow( ) );
+	printf( "GetForegroundWindow : %p\n", GetForegroundWindow( ) );
+	printf( "GetConsoleWindow : %p\n", GetConsoleWindow( ) );
+	printf( "GetActiveWindowParent : %p\n", GetParent( GetActiveWindow( ) ) );
+	printf( "GetForegroundWindowParent : %p\n", GetParent( GetForegroundWindow( ) ) );
+	printf( "GetConsoleWindowParent : %p\n", GetParent( GetConsoleWindow( ) ) );
+	printf( "GetWindowLongPtr (GWL_STYLE) : %I64d\n", GetWindowLongPtr( GetConsoleWindow( ), GWL_STYLE ) );
+	printf( "GetFocus : %p\n", GetFocus( ) );
+
+	
 	return 0;
 }
 
+void ConsoleOut_GUITHREADINFO( const GUITHREADINFO& info ) {
+	printf( "cbSize = %u\n", info.cbSize );
+	printf( "flags = %u\n", info.flags );
+	printf( "hwndActive = %p\n", info.hwndActive );
+	printf( "hwndCapture = %p\n", info.hwndCapture );
+	printf( "hwndCaret = %p\n", info.hwndCaret );
+	printf( "hwndFocus = %p\n", info.hwndFocus );
+	printf( "hwndMenuOwner = %p\n", info.hwndMenuOwner );
+	printf( "hwndMoveSize = %p\n", info.hwndMoveSize );
+	printf( "rcCaret = (%d,%d)-(%d,%d)\n", info.rcCaret.left, info.rcCaret.top, info.rcCaret.right, info.rcCaret.bottom );
+}
 
 void ConsoleOut_SPTD_RESULT( HSSCSI_SPTD_RESULT res, bool firstNewLine, std::string prefix ){
 	if ( firstNewLine ) printf( "\n" );

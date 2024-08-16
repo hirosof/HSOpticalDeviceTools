@@ -20,9 +20,11 @@ void DriveProcessEntry( char driveletter );
 void DiscProcess( CHSOpticalDrive* pDrive );
 void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_RawTOCTrackItem track , bool *pCancelled = nullptr);
 
+const TCHAR APPNAME[] = TEXT("HSAudioCDRippingConsole");
+
 int main( void ) {
 
-	SetConsoleTitleA( "HSAudioCDRippingConsole" );
+	SetConsoleTitle( APPNAME );
 	setlocale( LC_ALL, "Japanese" );
 	
 	THSEnumrateOpticalDriveInfo optical_drives_enum;
@@ -646,8 +648,10 @@ void RippingMain( CHSWaveWriterW* pWaveWriter, CHSOpticalDrive* pDrive, THSSCSI_
 
 		if ( pCancelled ) {
 			if ( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 ) {
-				*pCancelled = true;
-				break;
+				if ( MessageBox( GetConsoleWindow( ), TEXT( "リッピング処理をキャンセルしますか？" ), APPNAME, MB_ICONQUESTION | MB_YESNO ) == IDYES ) {
+					*pCancelled = true;
+					break;
+				}
 			}
 		}
 

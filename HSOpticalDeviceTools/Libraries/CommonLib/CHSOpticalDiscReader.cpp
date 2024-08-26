@@ -43,7 +43,7 @@ bool CHSOpticalDiscReader::readCapacity( THSSCSI_ReadCapacityResponse* pres ) {
 
 
 	if ( cmd.result.DeviceIOControlResult ) {
-		if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+		if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
 
 			pres->BlockLengthInBytes = HSSCSI_InverseEndian32( rawResp.BlockLengthInBytes );
 			pres->LogicalBlockAddress = HSSCSI_InverseEndian32( rawResp.LogicalBlockAddress );
@@ -88,7 +88,7 @@ bool CHSOpticalDiscReader::readDiscInformation( THSSCSI_DiscInformation* pInfo, 
 
 	}
 
-	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
+	if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
 		return false;
 	}
 
@@ -139,7 +139,7 @@ bool CHSOpticalDiscReader::readTrackResourcesInformation( THSSCSI_TrackResources
 
 
 	if ( cmd.result.DeviceIOControlResult ) {
-		if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+		if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
 
 			if ( raw.DiscInformationDataType != 1 ) return false;
 
@@ -185,7 +185,7 @@ bool CHSOpticalDiscReader::readPOWResourcesDiscInformation( THSSCSI_POWResources
 
 
 	if ( cmd.result.DeviceIOControlResult ) {
-		if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+		if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
 			if ( raw.DiscInformationDataType != 2 ) return false;
 			*pInfo = raw;
 			pInfo->DiscInformationLength = HSSCSI_InverseEndian16( pInfo->DiscInformationLength );

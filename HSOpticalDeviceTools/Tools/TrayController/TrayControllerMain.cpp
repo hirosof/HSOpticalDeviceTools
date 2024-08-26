@@ -490,7 +490,7 @@ bool  TrayOpenOrClose( CHSOpticalDrive* pDrive, DoTrayState state, std::string* 
 		}
 		CAtlStringA resultmes;
 
-		if ( HSSCSIStatusToStatusCode( res.scsiStatus ) != EHSSCSIStatusCode::Good ) {
+		if ( HSSCSIStatusToSCSIEnumStatusCode( res.scsiStatus ) != EHSSCSIStatusCode::Good ) {
 			resultmes.Format( "Ž¸”s‚µ‚Ü‚µ‚½B (Ú×FSCSIStatus=0x%02X, SK=0x%02X, ASC=0x%02X, ASCQ=0x%02X)",
 				res.scsiStatus.statusByteCode, res.scsiSK, res.scsiASC, res.scsiASCQ );
 		} else {
@@ -502,7 +502,7 @@ bool  TrayOpenOrClose( CHSOpticalDrive* pDrive, DoTrayState state, std::string* 
 			pMessage->append( resultmes.GetString( ) );
 		}
 
-		return HSSCSIStatusToStatusCode( res.scsiStatus ) == EHSSCSIStatusCode::Good;
+		return HSSCSIStatusToSCSIEnumStatusCode( res.scsiStatus ) == EHSSCSIStatusCode::Good;
 	}
 	return false;
 }

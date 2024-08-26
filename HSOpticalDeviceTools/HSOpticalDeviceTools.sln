@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experiments", "Experiments", "{21D209B5-1132-464E-A3F4-A859D8AA0AF5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1_Experiments", "1_Experiments", "{21D209B5-1132-464E-A3F4-A859D8AA0AF5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{E33B7B84-979C-4A8B-9058-6B482B7F7010}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3_Tools", "3_Tools", "{E33B7B84-979C-4A8B-9058-6B482B7F7010}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_Libraries", "0_Libraries", "{1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExperimentsGUI", "ExperimentsGUI", "{5E434C6A-D4DC-443D-AED8-BBB8512E32F4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2_ExperimentsGUI", "2_ExperimentsGUI", "{5E434C6A-D4DC-443D-AED8-BBB8512E32F4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonLib", "Libraries\CommonLib\CommonLib.vcxproj", "{A6A69963-242F-4BA8-9378-3A4EB42FAD80}"
 EndProject
@@ -38,6 +38,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InternalLib", "Libraries\InternalLib\InternalLib.vcxproj", "{BC3910B1-E23C-4D1B-86A5-EE6C4252BEBF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrayController", "Tools\TrayController\TrayController.vcxproj", "{68B99D76-28A3-4E58-B426-B68A0783A2FB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4_GUITools", "4_GUITools", "{822396C4-1A5F-4BCC-A744-0E943CBCE67C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrayControllerGUI", "GUITools\TrayControllerGUI\TrayControllerGUI.vcxproj", "{21AD8D32-164B-4916-B2EE-6E33837FCE85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -159,6 +163,14 @@ Global
 		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Release|x64.Build.0 = Release|x64
 		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Release|x86.ActiveCfg = Release|Win32
 		{68B99D76-28A3-4E58-B426-B68A0783A2FB}.Release|x86.Build.0 = Release|Win32
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Debug|x64.ActiveCfg = Debug|x64
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Debug|x64.Build.0 = Debug|x64
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Debug|x86.ActiveCfg = Debug|Win32
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Debug|x86.Build.0 = Debug|Win32
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Release|x64.ActiveCfg = Release|x64
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Release|x64.Build.0 = Release|x64
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Release|x86.ActiveCfg = Release|Win32
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +190,7 @@ Global
 		{13041C6E-02F5-4876-8E58-11E6A57AA157} = {1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}
 		{BC3910B1-E23C-4D1B-86A5-EE6C4252BEBF} = {1C6E3753-9DF8-41DE-9E3A-5DECCAF53754}
 		{68B99D76-28A3-4E58-B426-B68A0783A2FB} = {E33B7B84-979C-4A8B-9058-6B482B7F7010}
+		{21AD8D32-164B-4916-B2EE-6E33837FCE85} = {822396C4-1A5F-4BCC-A744-0E943CBCE67C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5C608A90-34FA-4934-AC45-EDCBEF90589F}

@@ -1,30 +1,54 @@
 #include "HSSCSICommandSupport.hpp"
 
-EHSSCSIStatusCode HSSCSIStatusToStatusCode(const UHSSCSIStatus status ) {
-	switch ( status.statusByteCode ) {
+EHSSCSIStatusCode HSSCSIStatusToSCSIEnumStatusCode(const UHSSCSIStatus status ) {
+	switch ( status.rawValue ) {
 		case 0x0:
 			return EHSSCSIStatusCode::Good;
-		case 0x1:
-			return EHSSCSIStatusCode::CheckCondition;
 		case 0x2:
-			return EHSSCSIStatusCode::ConditionMetGood;
+			return EHSSCSIStatusCode::CheckCondition;
 		case 0x4:
-			return EHSSCSIStatusCode::Busy;
+			return EHSSCSIStatusCode::ConditionMet;
 		case 0x8:
-			return EHSSCSIStatusCode::IntermediateGood;
-		case 0xA:
-			return EHSSCSIStatusCode::IntermediateConditionMet;
-		case 0xC:
-			return EHSSCSIStatusCode::ReservationConflict;
-		case 0x11:
-			return EHSSCSIStatusCode::CommandTerminated;
-		case 0x14:
-			return EHSSCSIStatusCode::QueueFullOrTaskSetFull;
+			return EHSSCSIStatusCode::Busy;
 		case 0x18:
+			return EHSSCSIStatusCode::ReservationConflict;
+		case 0x28:
+			return EHSSCSIStatusCode::TaskSetFull;
+		case 0x30:
 			return EHSSCSIStatusCode::ACAActive;
+		case 0x40:
+			return EHSSCSIStatusCode::TaskAborted;
 		default:
 			return EHSSCSIStatusCode::Unknown;
 	}
+}
+
+std::string HSSCSIStatusToString( const UHSSCSIStatus status ) {
+	return HSSCSIEnumStatusCodeToString( HSSCSIStatusToSCSIEnumStatusCode( status ) );
+}
+
+std::string HSSCSIEnumStatusCodeToString( EHSSCSIStatusCode code ) {
+
+	switch ( code ) {
+		case EHSSCSIStatusCode::Good:
+			return std::string( "GOOD" );
+		case EHSSCSIStatusCode::CheckCondition:
+			return std::string( "CHECK CONDITION" );
+		case EHSSCSIStatusCode::ConditionMet:
+			return std::string( "CONDITION MET" );
+		case EHSSCSIStatusCode::Busy:
+			return std::string( "BUSY" );
+		case EHSSCSIStatusCode::ReservationConflict:
+			return std::string( "RESERVATION CONFLICT" );
+		case EHSSCSIStatusCode::TaskSetFull:
+			return std::string( "TASK SET FULL" );
+		case EHSSCSIStatusCode::ACAActive:
+			return std::string( "ACA ACTIVE" );
+		case EHSSCSIStatusCode::TaskAborted:
+			return std::string( "TASK ABORTED" );
+	}
+
+	return std::string("UNKNOWN" );
 }
 
 bool HSSCSI_InitializeCommandData( THSSCSI_CommandData* pData ) {

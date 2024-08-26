@@ -26,17 +26,14 @@ union UHSSCSIStatus {
 enum struct EHSSCSIStatusCode {
 	Good = 0,
 	CheckCondition,
-	ConditionMetGood,
+	ConditionMet,
 	Busy,
-	IntermediateGood,
-	IntermediateConditionMet,
 	ReservationConflict,
-	CommandTerminated,
-	QueueFullOrTaskSetFull,
+	TaskSetFull,
 	ACAActive,
+	TaskAborted,
 	Unknown
 };
-
 
 enum struct EHSSCSI_SenseKey : uint8_t {
 	NO_SENSE = 0,
@@ -99,6 +96,7 @@ struct THSSCSISenseDataResponseFixedFormat  {
 
 
 struct HSSCSI_SPTD_RESULT {
+	bool isValidSCSIResultFields;
 	BOOL DeviceIOControlResult;
 	DWORD DeviceIOControlLastError;
 	DWORD resultSize;

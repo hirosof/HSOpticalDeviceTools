@@ -2,7 +2,11 @@
 
 #include "HSSCSICommandDefine.hpp"
 
-EHSSCSIStatusCode  HSSCSIStatusToStatusCode(const UHSSCSIStatus status );
+EHSSCSIStatusCode  HSSCSIStatusToSCSIEnumStatusCode(const UHSSCSIStatus status );
+
+std::string HSSCSIStatusToString( const UHSSCSIStatus status );
+std::string HSSCSIEnumStatusCodeToString( EHSSCSIStatusCode code );
+
 bool  HSSCSI_InitializeCommandData( THSSCSI_CommandData *pData );
 
 template <typename T> uint16_t HSSCSI_InverseEndian16( T value ) {

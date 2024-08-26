@@ -115,6 +115,16 @@ bool CHSOpticalDrive::GetDeviceInfoFromHandle( HANDLE hOpticalDrive, THSOpticalD
     return false;
 }
 
+uint8_t CHSOpticalDrive::CountOfOpticalDrive( void ) {
+    uint8_t count = 0;
+    for ( char c = 'A'; c <= 'Z'; c++ ) {
+        if ( CHSOpticalDrive::IsOpticalDrive( c ) ) {
+            count++;
+        }
+    }
+    return count;
+}
+
 CHSOpticalDrive::CHSOpticalDrive( void ) {
     this->hDrive = NULL;
     this->cOpenedDriveLetter = '\0';
@@ -190,10 +200,16 @@ bool CHSOpticalDrive::executeCommand( THSSCSI_CommandData* pData) const {
     pResult->DeviceIOControlResult = bret;
     pResult->DeviceIOControlLastError = lastError;
     pResult->executedOperationCode = pData->pSPTDStruct->Cdb[0];
-
+    pResult->isValidSCSIResultFields = false;
     if ( bret ) {
         pResult->resultSize = returnSize;
         pResult->scsiStatus.rawValue = pData->pSPTDStruct->ScsiStatus;
+
+        pResult->scsiSK = 0;
+        pResult->scsiASC = 0;
+        pResult->scsiASCQ = 0;
+
+        pResult->isValidSCSIResultFields = true;
 
         if ( pData->senseData.pRaw != nullptr ) {
             uint8_t scene_rc = pData->senseData.pResponseCodeOnly->responseCode;
@@ -205,12 +221,9 @@ bool CHSOpticalDrive::executeCommand( THSSCSI_CommandData* pData) const {
                 pResult->scsiSK = pData->senseData.pFixed->senseKey;
                 pResult->scsiASC = pData->senseData.pFixed->additionalSenseCode;
                 pResult->scsiASCQ = pData->senseData.pFixed->additionalSenseCodeQualifier;
-            } else {
-                pResult->scsiSK = 0;
-                pResult->scsiASC = 0;
-                pResult->scsiASCQ = 0;
-            }
+            } 
         }
+
 
     }
 
@@ -245,9 +258,9 @@ EHSSCSI_ReadyStatus CHSOpticalDrive::checkReady( HSSCSI_SPTD_RESULT* pDetailResu
         return EHSSCSI_ReadyStatus::FailedGotStatus;
     }
 
-    if ( HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+    if ( HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
         return EHSSCSI_ReadyStatus::Ready;
-    } else if ( HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::CheckCondition ) {
+    } else if ( HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::CheckCondition ) {
         if ( params.result.scsiSK == static_cast<uint8_t>( EHSSCSI_SenseKey::NOT_READY ) ) {
             if ( params.result.scsiASC == 0x3A ) {
                 return EHSSCSI_ReadyStatus::MediumNotPresent;
@@ -300,7 +313,7 @@ bool CHSOpticalDrive::trayOpen( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
 
     if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 bool CHSOpticalDrive::trayClose( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork ) const {
@@ -326,7 +339,7 @@ bool CHSOpticalDrive::trayClose( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWo
 
     if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 bool CHSOpticalDrive::trayLock( HSSCSI_SPTD_RESULT* pDetailResult ) const {
@@ -350,7 +363,7 @@ bool CHSOpticalDrive::trayLock( HSSCSI_SPTD_RESULT* pDetailResult ) const {
 
     if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 bool CHSOpticalDrive::trayUnlock( HSSCSI_SPTD_RESULT* pDetailResult ) const {
@@ -374,7 +387,7 @@ bool CHSOpticalDrive::trayUnlock( HSSCSI_SPTD_RESULT* pDetailResult ) const {
 
     if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 
@@ -416,7 +429,7 @@ bool CHSOpticalDrive::spinUp( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork 
 
     if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 bool CHSOpticalDrive::spinDown( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork ) const {
@@ -442,7 +455,7 @@ bool CHSOpticalDrive::spinDown( HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWor
 
     if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 bool CHSOpticalDrive::setPowerState( uint8_t condition, HSSCSI_SPTD_RESULT* pDetailResult, bool asyncWork ) const {
@@ -469,7 +482,7 @@ bool CHSOpticalDrive::setPowerState( uint8_t condition, HSSCSI_SPTD_RESULT* pDet
 
     if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 EHSOD_AlimentMaskType CHSOpticalDrive::getAlimentMask( ULONG* pRawAlimentMask ) const {
@@ -610,11 +623,11 @@ bool CHSOpticalDrive::getMechanismStatus( THSSCSI_MechanismStatus* pStatus, HSSC
          pDetailResult->resultSize = 0;
    }
 
-    if ( HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+    if ( HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
         *pStatus = ms;
     }
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 bool CHSOpticalDrive::getMediaEventStatus( THSSCSI_MediaEventStatus* pStatus, HSSCSI_SPTD_RESULT* pDetailResult ) const{
@@ -646,12 +659,12 @@ bool CHSOpticalDrive::getMediaEventStatus( THSSCSI_MediaEventStatus* pStatus, HS
         pDetailResult->resultSize = 0;
     }
 
-    if ( HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
+    if ( HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good ) {
         *pStatus = mes;
     }
 
 
-    return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+    return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }
 
 

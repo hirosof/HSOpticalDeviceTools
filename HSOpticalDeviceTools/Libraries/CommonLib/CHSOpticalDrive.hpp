@@ -128,6 +128,7 @@ public:
 	static bool GetFirstOpticalDriveInfo( THSOpticalDriveInfo *pInfo );
 	static bool GetDeviceInfo( const char opticalDriveLetter, THSOpticalDriveDeviceInfo* pInfo );
 	static bool GetDeviceInfoFromHandle( HANDLE hOpticalDrive, THSOpticalDriveDeviceInfo* pInfo );
+	static uint8_t CountOfOpticalDrive( void );
 
 	CHSOpticalDrive( void );
 

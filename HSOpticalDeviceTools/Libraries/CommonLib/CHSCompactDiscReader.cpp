@@ -205,7 +205,7 @@ bool CHSCompactDiscReader::readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCS
 
 	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
-	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
+	if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
 
 
 	size_t responseAllSize = HSSCSI_InverseEndian16( resHeaderOnly.DataLength ) + 2;
@@ -226,7 +226,7 @@ bool CHSCompactDiscReader::readFormmatedTOC( THSSCSI_FormattedTOC* pInfo, EHSSCS
 	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
 
-	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
+	if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
 
 
 	THSSCSI_TOC_PMA_ATIP_ResponseHeader* pHeader = reinterpret_cast<THSSCSI_TOC_PMA_ATIP_ResponseHeader*>( resBuffer.get( ) );
@@ -339,7 +339,7 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 
 	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
-	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
+	if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
 
 
 	size_t responseAllSize = HSSCSI_InverseEndian16( resHeaderOnly.DataLength ) + 2;
@@ -360,7 +360,7 @@ bool CHSCompactDiscReader::readRawTOC( THSSCSI_RawTOC* pInfo, EHSSCSI_AddressFor
 	if ( !this->executeRawCommand( &cmd ) )return false;
 	if ( cmd.result.DeviceIOControlResult == FALSE )  return false;
 
-	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
+	if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good )  return false;
 
 
 	THSSCSI_TOC_PMA_ATIP_ResponseHeader* pHeader = reinterpret_cast<THSSCSI_TOC_PMA_ATIP_ResponseHeader*>( resBuffer.get( ) );
@@ -520,7 +520,7 @@ EHSSCSI_CDText_ReadResult CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Infor
 		return EHSSCSI_CDText_ReadResult::Failed;
 	}
 
-	if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
+	if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
 		return EHSSCSI_CDText_ReadResult::Failed;
 	}
 
@@ -566,7 +566,7 @@ EHSSCSI_CDText_ReadResult CHSCompactDiscReader::readCDText( THSSCSI_CDTEXT_Infor
 			return EHSSCSI_CDText_ReadResult::Failed;
 		}
 
-		if ( HSSCSIStatusToStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
+		if ( HSSCSIStatusToSCSIEnumStatusCode( cmd.result.scsiStatus ) != EHSSCSIStatusCode::Good ) {
 			return EHSSCSI_CDText_ReadResult::Failed;
 		}
 
@@ -1014,5 +1014,5 @@ bool CHSCompactDiscReader::setSpeedMax( HSSCSI_SPTD_RESULT* pResult ) const {
 
 	if ( params.result.DeviceIOControlResult == FALSE ) return false;
 
-	return HSSCSIStatusToStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
+	return HSSCSIStatusToSCSIEnumStatusCode( params.result.scsiStatus ) == EHSSCSIStatusCode::Good;
 }

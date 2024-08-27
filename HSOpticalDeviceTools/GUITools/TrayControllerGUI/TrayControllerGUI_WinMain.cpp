@@ -15,7 +15,7 @@
 
 
 
-INT_PTR MainWindowDlgProc( HWND hDlg, UINT msg, WPARAM wp, LPARAM lp );
+INT_PTR CALLBACK MainWindowDlgProc( HWND hDlg, UINT msg, WPARAM wp, LPARAM lp );
 
 HINSTANCE hInstance = NULL;
 
@@ -83,7 +83,7 @@ int WINAPI WinMain( _In_ HINSTANCE hCurInst, _In_opt_ HINSTANCE hPrevInst, _In_ 
 }
 
 
-INT_PTR MainWindowDlgProc( HWND hDlg, UINT msg, WPARAM wp, LPARAM lp ) {
+INT_PTR CALLBACK MainWindowDlgProc( HWND hDlg, UINT msg, WPARAM wp, LPARAM lp ) {
 	switch ( msg ) {
 		case WM_DESTROY:
 			PostQuitMessage( 0 );
